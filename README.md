@@ -1,1 +1,1 @@
-# FindMyMed-web-project-2A11
+# SOLIDA-project-2A11
