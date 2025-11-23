@@ -1,152 +1,225 @@
-<?php
-// app/views/sponsor/index.php
-?>
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="UTF-8">
+    <title>Backoffice - Gestion des sponsors</title>
 
-  <link rel="apple-touch-icon" sizes="76x76" href="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/img/favicon.png">
-  <title>Liste des sponsors</title>
+    <!-- CSS BOOTSTRAP + TEMPLATE BACKOFFICE (même que deals) -->
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/templatemo.css">
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/custom.css">
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/fontawesome.min.css">
 
-  <!-- Fonts and icons -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-  <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-icons.css" rel="stylesheet" />
-  <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-svg.css" rel="stylesheet" />
-  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
 
-  <!-- CSS Argon local -->
-  <link id="pagestyle"
-        href="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/css/argon-dashboard.css?v=2.1.0"
-        rel="stylesheet" />
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        .sidebar a {
+            color: #adb5bd;
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #495057;
+            color: #fff;
+        }
+
+        .content-wrapper {
+            padding: 20px;
+        }
+
+        .page-title {
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            font-size: 0.8rem;
+        }
+
+        .table thead th {
+            white-space: nowrap;
+        }
+    </style>
 </head>
+<body>
 
-<body class="g-sidenav-show bg-gray-100">
-
-  <!-- NAVBAR SIMPLE -->
-  <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl mt-4">
-    <div class="container-fluid py-1">
-      <nav aria-label="breadcrumb">
-        <h4 class="font-weight-bolder mb-0">Sponsors</h4>
-        <span class="text-sm mb-0">Backoffice &gt; Liste des sponsors</span>
-      </nav>
-      <div class="ms-md-auto pe-md-3 d-flex align-items-center">
-        <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=create"
-           class="btn btn-sm bg-gradient-dark mb-0">
-          <i class="fas fa-plus me-1"></i> Nouveau sponsor
-        </a>
-      </div>
-    </div>
-  </nav>
-
-  <div class="container-fluid py-4">
+<div class="container-fluid">
     <div class="row">
-      <div class="col-12">
-        <div class="card mb-4">
-          <div class="card-header pb-0">
-            <h6>Liste des sponsors</h6>
-          </div>
-          <div class="card-body px-0 pt-0 pb-2">
-            <div class="table-responsive p-0">
-              <table class="table align-items-center mb-0">
-                <thead>
-                  <tr>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Entreprise</th>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type</th>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Statut</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php if (!empty($sponsors)): ?>
-                    <?php foreach ($sponsors as $s): ?>
-                      <tr>
-                        <td>
-                          <p class="text-xs font-weight-bold mb-0">
-                            <?= htmlspecialchars($s['id']) ?>
-                          </p>
-                        </td>
-                        <td>
-                          <p class="text-xs font-weight-bold mb-0">
-                            <?= htmlspecialchars($s['nomEntreprise']) ?>
-                          </p>
-                        </td>
-                        <td>
-                          <p class="text-xs text-secondary mb-0">
-                            <?= htmlspecialchars($s['emailContact']) ?>
-                          </p>
-                        </td>
-                        <td>
-                          <span class="badge badge-sm bg-gradient-info">
-                            <?= htmlspecialchars($s['typeSponsoring']) ?>
-                          </span>
-                        </td>
-                        <td>
-                          <?php
-                          $statusClass = 'bg-gradient-secondary';
-                          if ($s['statut'] === 'Actif') $statusClass = 'bg-gradient-success';
-                          elseif ($s['statut'] === 'En attente') $statusClass = 'bg-gradient-warning';
-                          ?>
-                          <span class="badge badge-sm <?= $statusClass ?>">
-                            <?= htmlspecialchars($s['statut']) ?>
-                          </span>
-                        </td>
-                        <td class="align-middle text-center">
-                          <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=edit&id=<?= $s['id'] ?>"
-                             class="btn btn-sm btn-primary mb-0 me-1">
-                            <i class="fas fa-edit"></i>
-                          </a>
-                          <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=delete&id=<?= $s['id'] ?>"
-                             class="btn btn-sm btn-danger mb-0"
-                             onclick="return confirm('Supprimer ce sponsor ?');">
-                            <i class="fas fa-trash"></i>
-                          </a>
-                        </td>
-                      </tr>
-                    <?php endforeach; ?>
-                  <?php else: ?>
-                    <tr>
-                      <td colspan="6" class="text-center py-4">
-                        Aucun sponsor pour le moment.
-                        <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=create">
-                          Ajouter un sponsor
-                        </a>
-                      </td>
-                    </tr>
-                  <?php endif; ?>
-                </tbody>
-              </table>
+
+        <!-- SIDEBAR BACKOFFICE -->
+        <nav class="col-md-2 d-none d-md-block sidebar">
+            <div class="py-4 px-3">
+                <h4 class="text-white">SOLIDA Admin</h4>
+                <p class="mb-0 text-muted">Backoffice</p>
             </div>
-          </div>
-        </div>
-      </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php" class="nav-link">
+                        <i class="fa fa-home me-2"></i> Dashboard général
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=index"
+                       class="nav-link active">
+                        <i class="fa fa-handshake-o me-2"></i> Gestion des sponsors
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=deal&action=index"
+                       class="nav-link">
+                        <i class="fa fa-tags me-2"></i> Gestion des deals
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- CONTENU PRINCIPAL -->
+        <main class="col-md-10 ms-sm-auto col-lg-10 content-wrapper">
+
+            <!-- Bandeau top -->
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-3 border-bottom pb-2">
+                <h1 class="h3 page-title">Gestion des sponsors</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a class="btn btn-success"
+                       href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=create">
+                        <i class="fa fa-plus me-1"></i> Ajouter un sponsor
+                    </a>
+                </div>
+            </div>
+
+            <!-- Indicateurs (optionnels) -->
+            <div class="row mb-4">
+                <?php
+                $total = count($sponsors);
+                $actifs = 0;
+                $inactifs = 0;
+
+                foreach ($sponsors as $sp) {
+                    if (strtolower($sp->getStatut()) === 'actif') {
+                        $actifs++;
+                    } elseif (strtolower($sp->getStatut()) === 'inactif') {
+                        $inactifs++;
+                    }
+                }
+                ?>
+                <div class="col-md-4 mb-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Total sponsors</h6>
+                            <h3><?= $total ?></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Actifs</h6>
+                            <h3><?= $actifs ?></h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Inactifs</h6>
+                            <h3><?= $inactifs ?></h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLEAU DES SPONSORS -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Liste des sponsors</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0 align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom entreprise</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Type sponsoring</th>
+                                <th>Montant engagé</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php if (empty($sponsors)): ?>
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        Aucun sponsor enregistré pour le moment.
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($sponsors as $sp): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($sp->getId()) ?></td>
+                                        <td><?= htmlspecialchars($sp->getNomEntreprise()) ?></td>
+                                        <td><?= htmlspecialchars($sp->getEmailContact()) ?></td>
+                                        <td><?= htmlspecialchars($sp->getTelephone()) ?></td>
+                                        <td><?= htmlspecialchars($sp->getTypeSponsoring()) ?></td>
+                                        <td>
+                                            <?php if ($sp->getMontantEngage() !== null): ?>
+                                                <?= htmlspecialchars($sp->getMontantEngage()) ?> €
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            $statut = strtolower($sp->getStatut());
+                                            if ($statut === 'actif'): ?>
+                                                <span class="badge bg-success">Actif</span>
+                                            <?php elseif ($statut === 'inactif'): ?>
+                                                <span class="badge bg-secondary">Inactif</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-info">
+                                                    <?= htmlspecialchars($sp->getStatut()) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-primary btn-sm mb-1"
+                                               href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=edit&id=<?= $sp->getId() ?>">
+                                                <i class="fa fa-pencil"></i>
+                                            </a>
+
+                                            <a class="btn btn-danger btn-sm mb-1"
+                                               href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=delete&id=<?= $sp->getId() ?>"
+                                               onclick="return confirm('Supprimer ce sponsor ?');">
+                                                <i class="fa fa-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
+</div>
 
-    <footer class="footer pt-3">
-      <div class="container-fluid">
-        <div class="row align-items-center justify-content-lg-between">
-          <div class="col-lg-12 mb-lg-0 mb-4 text-center">
-            <div class="copyright text-secondary text-sm">
-              Copyright ©
-              <script>document.write(new Date().getFullYear())</script>
-              Soft by Creative Tim.
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
-  </div>
-
-  <!-- JS Argon -->
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/core/popper.min.js"></script>
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/core/bootstrap.min.js"></script>
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/plugins/smooth-scrollbar.min.js"></script>
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/argon-dashboard.min.js?v=2.1.0"></script>
+<!-- JS -->
+<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/jquery-1.11.0.min.js"></script>
+<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/bootstrap.bundle.min.js"></script>
+<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/templatemo.js"></script>
+<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/custom.js"></script>
 </body>
 </html>

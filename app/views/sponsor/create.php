@@ -1,206 +1,485 @@
-<?php
-// app/views/sponsor/create.php
-?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Devenir sponsor - SOLIDA</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="apple-touch-icon" sizes="76x76" href="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/img/favicon.png">
-  <title>Ajouter un sponsor</title>
+    <!-- FAVICONS -->
+    <link rel="apple-touch-icon" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/img/apple-icon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/img/favicon.ico">
 
-  <!-- Fonts and icons -->
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+    <!-- CSS DU TEMPLATE FRONT (même que front.php) -->
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/templatemo.css">
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/custom.css">
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/fontawesome.min.css">
 
-  <!-- Nucleo Icons (mêmes que sign-up, en CDN) -->
-  <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-icons.css" rel="stylesheet" />
-  <link href="https://demos.creative-tim.com/argon-dashboard-pro/assets/css/nucleo-svg.css" rel="stylesheet" />
+    <style>
+        body {
+            background: #f8f8f8;
+        }
 
-  <!-- Font Awesome Icons -->
-  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+        .hero-title {
+            text-align: center;
+            font-size: 28px;
+            margin: 40px 0 20px 0;
+            font-weight: bold;
+        }
 
-  <!-- CSS Argon local : *** CHEMIN ADAPTÉ À TON DOSSIER *** -->
-  <link id="pagestyle"
-        href="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/css/argon-dashboard.css?v=2.1.0"
-        rel="stylesheet" />
+        .sponsor-form-wrapper {
+            max-width: 900px;
+            margin: 0 auto 60px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .required {
+            color: red;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+        }
+
+        .logo-preview {
+            max-width: 150px;
+            max-height: 150px;
+            margin-top: 10px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: #f5f5f5;
+        }
+    </style>
 </head>
 
-<body class="">
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg position-absolute top-0 z-index-3 w-100 shadow-none my-3 navbar-transparent mt-4">
-    <div class="container">
-      <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 text-white"
-         href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=index">
-        Backoffice Sponsors
-      </a>
-    </div>
-  </nav>
-  <!-- End Navbar -->
+<body>
 
-  <main class="main-content mt-0">
-    <div class="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg"
-         style="background-image: url('https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/signup-cover.jpg'); background-position: top;">
-      <span class="mask bg-gradient-dark opacity-6"></span>
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-lg-5 text-center mx-auto">
-            <h1 class="text-white mb-2 mt-5">Nouveau sponsor</h1>
-            <p class="text-lead text-white">
-              Utilisez ce formulaire pour ajouter un sponsor dans votre projet.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+<!-- Header (copié de front.php) -->
+<div class="clr">
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
 
-    <div class="container">
-      <div class="row mt-lg-n10 mt-md-n11 mt-n10 justify-content-center">
-        <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
-          <div class="card z-index-0">
-            <div class="card-header text-center pt-4">
-              <h5>Informations du sponsor</h5>
+            <a class="navbar-brand text-success logo h1 align-self-center"
+               href="/PROJET_WEB_MVC_FINAL/public/index1.php">
+                SOLIDA
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between"
+                 id="templatemo_main_nav">
+                <div class="flex-fill">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/PROJET_WEB_MVC_FINAL/public/index1.php">Accueil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Événements / Shop</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Forum</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=front">
+                                Sponsors
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Mon Compte</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex">
+                    <a class="nav-icon d-none d-lg-inline" href="#" data-bs-toggle="modal"
+                       data-bs-target="#templatemo_search">
+                        <i class="fa fa-fw fa-search text-dark mr-2"></i>
+                    </a>
+                    <a class="nav-icon position-relative text-decoration-none" href="#">
+                        <i class="fa fa-fw fa-cart-arrow-down text-dark mr-1"></i>
+                        <span
+                            class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark">7</span>
+                    </a>
+                    <a class="nav-icon position-relative text-decoration-none" href="#">
+                        <i class="fa fa-fw fa-user text-dark mr-3"></i>
+                        <span
+                            class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark">+99</span>
+                    </a>
+                </div>
             </div>
 
-            <div class="card-body">
-              <?php if (!empty($errors)): ?>
-                <div class="alert alert-danger">
-                  <?php foreach ($errors as $e): ?>
-                    <div><?= htmlspecialchars($e) ?></div>
-                  <?php endforeach; ?>
-                </div>
-              <?php endif; ?>
+        </div>
+    </nav>
+</div>
+<!-- Close Header -->
 
-              <form role="form" method="post">
-                <div class="mb-3">
-                  <label class="form-label">Nom Entreprise *</label>
-                  <input type="text" name="nomEntreprise" class="form-control" placeholder="Nom de l'entreprise" required>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Email Contact *</label>
-                  <input type="email" name="emailContact" class="form-control" placeholder="email@exemple.com" required>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Téléphone</label>
-                  <input type="text" name="telephone" class="form-control" placeholder="+216 ...">
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Adresse</label>
-                  <input type="text" name="adresse" class="form-control" placeholder="Adresse complète">
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Type Sponsoring *</label>
-                  <select name="typeSponsoring" class="form-control" required>
-                    <option value="">-- Sélectionner --</option>
-                    <option value="Or">Or</option>
-                    <option value="Argent">Argent</option>
-                    <option value="Bronze">Bronze</option>
-                    <option value="Partenaire">Partenaire</option>
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Montant engagé (€)</label>
-                  <input type="number" step="0.01" name="montantEngage" class="form-control" placeholder="Ex : 5000.00">
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Domaine d'activité</label>
-                  <input type="text" name="domaineActivite" class="form-control" placeholder="Ex : Technologie, Banque...">
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Logo URL</label>
-                  <input type="text" name="logoUrl" class="form-control" placeholder="https://.../logo.png">
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Contrat URL (PDF)</label>
-                  <input type="text" name="contratUrl" class="form-control" placeholder="https://.../contrat.pdf">
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Date début partenariat</label>
-                  <input type="date" name="dateDebutPartenaire" class="form-control">
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Date fin partenariat</label>
-                  <input type="date" name="dateFinPartenaire" class="form-control">
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Statut *</label>
-                  <select name="statut" class="form-control" required>
-                    <option value="">-- Sélectionner --</option>
-                    <option value="Actif">Actif</option>
-                    <option value="Inactif">Inactif</option>
-                    <option value="En attente">En attente</option>
-                  </select>
-                </div>
-
-                <div class="text-center">
-                  <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">
-                    Enregistrer le sponsor
-                  </button>
-                </div>
-                <p class="text-sm mt-3 mb-0 text-center">
-                  <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=index"
-                     class="text-dark font-weight-bolder">
-                    &larr; Retour à la liste des sponsors
-                  </a>
-                </p>
-              </form>
-
+<!-- Modal Search -->
+<div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="w-100 pt-1 mb-5 text-right">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="" method="get" class="modal-content modal-body border-0 p-0">
+            <div class="input-group mb-2">
+                <input type="text" class="form-control" id="inputModalSearch" name="q" placeholder="Search ...">
+                <button type="submit" class="input-group-text bg-success text-light">
+                    <i class="fa fa-fw fa-search text-white"></i>
+                </button>
             </div>
-          </div>
-        </div>
-      </div>
+        </form>
     </div>
-  </main>
+</div>
 
-  <footer class="footer py-5">
+<!-- CONTENU : FORMULAIRE DEVENIR SPONSOR -->
+<div class="container py-5">
+
+    <h2 class="hero-title">🤝 Devenir sponsor de SOLIDA</h2>
+
+    <div class="sponsor-form-wrapper">
+        <p class="mb-4">
+            Remplissez ce formulaire pour proposer un partenariat avec notre association étudiante.
+            Les champs marqués d'une <span class="required">*</span> sont obligatoires.
+        </p>
+
+        <form id="sponsorCreateForm" method="post"
+              action="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=create"
+              enctype="multipart/form-data">
+
+            <!-- NOM ENTREPRISE -->
+            <div class="mb-3">
+                <label class="form-label">Nom de l'entreprise <span class="required">*</span></label>
+                <input type="text" name="nomEntreprise" id="nomEntreprise"
+                       class="form-control"
+                       value="<?= htmlspecialchars($old['nomEntreprise'] ?? '') ?>">
+                <div class="error-message" id="error-nomEntreprise"></div>
+            </div>
+
+            <!-- EMAIL + TELEPHONE -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email de contact <span class="required">*</span></label>
+                    <input type="text" name="emailContact" id="emailContact"
+                           class="form-control"
+                           value="<?= htmlspecialchars($old['emailContact'] ?? '') ?>">
+                    <div class="error-message" id="error-emailContact"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Téléphone (8 chiffres)</label>
+                    <input type="text" name="telephone" id="telephone"
+                           class="form-control"
+                           value="<?= htmlspecialchars($old['telephone'] ?? '') ?>">
+                    <div class="error-message" id="error-telephone"></div>
+                </div>
+            </div>
+
+            <!-- ADRESSE -->
+            <div class="mb-3">
+                <label class="form-label">Adresse</label>
+                <input type="text" name="adresse" id="adresse"
+                       class="form-control"
+                       value="<?= htmlspecialchars($old['adresse'] ?? '') ?>">
+                <div class="error-message" id="error-adresse"></div>
+            </div>
+
+            <!-- TYPE SPONSORING + MONTANT + DOMAINE -->
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Type de sponsoring <span class="required">*</span></label>
+                    <select name="typeSponsoring" id="typeSponsoring" class="form-select">
+                        <option value="">-- Choisir --</option>
+                        <option value="Financier" <?= (isset($old['typeSponsoring']) && $old['typeSponsoring'] === 'Financier') ? 'selected' : '' ?>>Financier</option>
+                        <option value="Matériel" <?= (isset($old['typeSponsoring']) && $old['typeSponsoring'] === 'Matériel') ? 'selected' : '' ?>>Matériel</option>
+                        <option value="Média" <?= (isset($old['typeSponsoring']) && $old['typeSponsoring'] === 'Média') ? 'selected' : '' ?>>Média</option>
+                    </select>
+                    <div class="error-message" id="error-typeSponsoring"></div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Montant engagé (€)</label>
+                    <input type="text" name="montantEngage" id="montantEngage"
+                           class="form-control"
+                           value="<?= htmlspecialchars($old['montantEngage'] ?? '') ?>">
+                    <div class="error-message" id="error-montantEngage"></div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Domaine d'activité</label>
+                    <input type="text" name="domaineActivite" id="domaineActivite"
+                           class="form-control"
+                           value="<?= htmlspecialchars($old['domaineActivite'] ?? '') ?>">
+                    <div class="error-message" id="error-domaineActivite"></div>
+                </div>
+            </div>
+
+            <!-- LOGO (UPLOAD, OPTIONNEL) + CONTRAT (URL TEXTE) -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Logo de l'entreprise
+                        <small class="text-muted d-block">(image JPG/PNG/GIF, max 1 Mo, optionnel)</small>
+                    </label>
+                    <input type="file" name="logo" id="logo"
+                           class="form-control" accept="image/*">
+                    <div class="error-message" id="error-logo"></div>
+                    <img id="logoPreview" class="logo-preview d-none" alt="Prévisualisation du logo">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Contrat (URL)</label>
+                    <input type="text" name="contratUrl" id="contratUrl"
+                           class="form-control"
+                           value="<?= htmlspecialchars($old['contratUrl'] ?? '') ?>">
+                    <div class="error-message" id="error-contratUrl"></div>
+                </div>
+            </div>
+
+            <!-- DATES (OBLIGATOIRES) -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Date début partenariat <span class="required">*</span></label>
+                    <input type="date" name="dateDebutPartenaire" id="dateDebutPartenaire"
+                           class="form-control"
+                           value="<?= htmlspecialchars($old['dateDebutPartenaire'] ?? '') ?>">
+                    <div class="error-message" id="error-dateDebutPartenaire"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Date fin partenariat <span class="required">*</span></label>
+                    <input type="date" name="dateFinPartenaire" id="dateFinPartenaire"
+                           class="form-control"
+                           value="<?= htmlspecialchars($old['dateFinPartenaire'] ?? '') ?>">
+                    <div class="error-message" id="error-dateFinPartenaire"></div>
+                </div>
+            </div>
+
+            <!-- STATUT -->
+            <div class="mb-3">
+                <label class="form-label">Statut <span class="required">*</span></label>
+                <select name="statut" id="statut" class="form-select">
+                    <option value="">-- Choisir --</option>
+                    <option value="actif" <?= (isset($old['statut']) && $old['statut'] === 'actif') ? 'selected' : '' ?>>Actif</option>
+                    <option value="inactif" <?= (isset($old['statut']) && $old['statut'] === 'inactif') ? 'selected' : '' ?>>Inactif</option>
+                </select>
+                <div class="error-message" id="error-statut"></div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=front"
+                   class="btn btn-secondary">
+                    ⟵ Retour à la page sponsors
+                </a>
+                <button type="submit" class="btn btn-success">
+                    Envoyer ma demande de sponsoring
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-dark text-light py-3">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-8 mb-4 mx-auto text-center">
-          <a href="javascript:;" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">Company</a>
-          <a href="javascript:;" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">About Us</a>
-          <a href="javascript:;" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">Team</a>
-          <a href="javascript:;" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">Products</a>
-          <a href="javascript:;" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">Blog</a>
-          <a href="javascript:;" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">Pricing</a>
-        </div>
-        <div class="col-lg-8 mx-auto text-center mb-4 mt-2">
-          <a href="javascript:;" class="text-secondary me-xl-4 me-4"><span class="text-lg fab fa-dribbble"></span></a>
-          <a href="javascript:;" class="text-secondary me-xl-4 me-4"><span class="text-lg fab fa-twitter"></span></a>
-          <a href="javascript:;" class="text-secondary me-xl-4 me-4"><span class="text-lg fab fa-instagram"></span></a>
-          <a href="javascript:;" class="text-secondary me-xl-4 me-4"><span class="text-lg fab fa-pinterest"></span></a>
-          <a href="javascript:;" class="text-secondary me-xl-4 me-4"><span class="text-lg fab fa-github"></span></a>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-8 mx-auto text-center mt-1">
-          <p class="mb-0 text-secondary">
-            Copyright ©
-            <script>document.write(new Date().getFullYear())</script>
-            Soft by Creative Tim.
-          </p>
-        </div>
-      </div>
+        <p class="mb-0">
+            &copy; <?= date('Y') ?> SOLIDA - Tous droits réservés.
+        </p>
     </div>
-  </footer>
+</footer>
 
-  <!-- JS Files : même dossier que le CSS -->
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/core/popper.min.js"></script>
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/core/bootstrap.min.js"></script>
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/plugins/perfect-scrollbar.min.js"></script>
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/plugins/smooth-scrollbar.min.js"></script>
-  <script src="/PROJET_WEB_MVC_FINAL/public/argon-dashboard-3-main/assets/js/argon-dashboard.min.js?v=2.1.0"></script>
+<!-- JS TEMPLATE -->
+<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/jquery-1.11.0.min.js"></script>
+<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/bootstrap.bundle.min.js"></script>
+<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/templatemo.js"></script>
+<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/custom.js"></script>
+
+<script>
+const MAX_LOGO_SIZE = 1 * 1024 * 1024; // 1 Mo
+const logoInput = document.getElementById('logo');
+const logoPreview = document.getElementById('logoPreview');
+
+// Prévisualisation + contrôle de base du logo (optionnel)
+logoInput.addEventListener('change', function () {
+    const file = this.files[0];
+    document.getElementById('error-logo').innerText = '';
+    logoInput.classList.remove('is-invalid');
+    logoPreview.classList.add('d-none');
+    logoPreview.src = '';
+
+    if (!file) return; // rien choisi → logo optionnel
+
+    // type image
+    if (!file.type.startsWith('image/')) {
+        document.getElementById('error-logo').innerText =
+            "Le fichier doit être une image (JPG, PNG, GIF...).";
+        logoInput.classList.add('is-invalid');
+        this.value = '';
+        return;
+    }
+
+    // taille max 1 Mo
+    if (file.size > MAX_LOGO_SIZE) {
+        document.getElementById('error-logo').innerText =
+            "Le logo est trop grand (taille max 1 Mo).";
+        logoInput.classList.add('is-invalid');
+        this.value = '';
+        return;
+    }
+
+    // prévisualisation
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        logoPreview.src = e.target.result;
+        logoPreview.classList.remove('d-none');
+    };
+    reader.readAsDataURL(file);
+});
+
+// Validation côté client - création sponsor
+document.getElementById('sponsorCreateForm').addEventListener('submit', function (e) {
+    let hasError = false;
+
+    const nomEntreprise       = document.getElementById('nomEntreprise');
+    const emailContact        = document.getElementById('emailContact');
+    const telephone           = document.getElementById('telephone');
+    const typeSponsoring      = document.getElementById('typeSponsoring');
+    const montantEngage       = document.getElementById('montantEngage');
+    const statut              = document.getElementById('statut');
+    const dateDebutPartenaire = document.getElementById('dateDebutPartenaire');
+    const dateFinPartenaire   = document.getElementById('dateFinPartenaire');
+
+    const fields = [
+        nomEntreprise, emailContact, telephone, typeSponsoring,
+        montantEngage, statut, dateDebutPartenaire, dateFinPartenaire
+    ];
+    const errorIds = [
+        'error-nomEntreprise','error-emailContact','error-telephone',
+        'error-typeSponsoring','error-montantEngage','error-statut',
+        'error-dateDebutPartenaire','error-dateFinPartenaire'
+    ];
+
+    // Reset erreurs
+    fields.forEach((field, index) => {
+        field.classList.remove('is-invalid');
+        document.getElementById(errorIds[index]).innerText = '';
+    });
+    document.getElementById('error-logo').innerText = '';
+    logoInput.classList.remove('is-invalid');
+
+    // Nom obligatoire
+    if (nomEntreprise.value.trim() === '') {
+        hasError = true;
+        nomEntreprise.classList.add('is-invalid');
+        document.getElementById('error-nomEntreprise').innerText =
+            "Le nom de l'entreprise est obligatoire.";
+    }
+
+    // Email obligatoire + format
+    const emailVal = emailContact.value.trim();
+    if (emailVal === '') {
+        hasError = true;
+        emailContact.classList.add('is-invalid');
+        document.getElementById('error-emailContact').innerText =
+            "L'email de contact est obligatoire.";
+    } else {
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regexEmail.test(emailVal)) {
+            hasError = true;
+            emailContact.classList.add('is-invalid');
+            document.getElementById('error-emailContact').innerText =
+                "Format d'email invalide (ex: nom@domaine.com).";
+        }
+    }
+
+    // Téléphone : optionnel, si rempli → 8 chiffres
+    const telVal = telephone.value.trim();
+    if (telVal !== '') {
+        const regexTel = /^\d{8}$/;
+        if (!regexTel.test(telVal)) {
+            hasError = true;
+            telephone.classList.add('is-invalid');
+            document.getElementById('error-telephone').innerText =
+                "Le téléphone doit contenir exactement 8 chiffres.";
+        }
+    }
+
+    // Type sponsoring obligatoire
+    if (typeSponsoring.value.trim() === '') {
+        hasError = true;
+        typeSponsoring.classList.add('is-invalid');
+        document.getElementById('error-typeSponsoring').innerText =
+            "Le type de sponsoring est obligatoire.";
+    }
+
+    // Montant : optionnel, si rempli > 0
+    const montantVal = montantEngage.value.trim();
+    if (montantVal !== '') {
+        if (isNaN(montantVal) || Number(montantVal) <= 0) {
+            hasError = true;
+            montantEngage.classList.add('is-invalid');
+            document.getElementById('error-montantEngage').innerText =
+                "Le montant engagé doit être un nombre positif.";
+        }
+    }
+
+    // Dates : OBLIGATOIRES
+    const dateDebVal = dateDebutPartenaire.value.trim();
+    const dateFinVal = dateFinPartenaire.value.trim();
+
+    if (dateDebVal === '') {
+        hasError = true;
+        dateDebutPartenaire.classList.add('is-invalid');
+        document.getElementById('error-dateDebutPartenaire').innerText =
+            "La date de début de partenariat est obligatoire.";
+    }
+
+    if (dateFinVal === '') {
+        hasError = true;
+        dateFinPartenaire.classList.add('is-invalid');
+        document.getElementById('error-dateFinPartenaire').innerText =
+            "La date de fin de partenariat est obligatoire.";
+    }
+
+    // Si les deux dates sont présentes, on vérifie l'ordre logique
+    if (dateDebVal !== '' && dateFinVal !== '') {
+        const dDeb = new Date(dateDebVal);
+        const dFin = new Date(dateFinVal);
+
+        if (dFin < dDeb) {
+            hasError = true;
+            dateFinPartenaire.classList.add('is-invalid');
+            document.getElementById('error-dateFinPartenaire').innerText =
+                "La date de fin doit être postérieure ou égale à la date de début.";
+        }
+    }
+
+    // Statut obligatoire
+    if (statut.value.trim() === '') {
+        hasError = true;
+        statut.classList.add('is-invalid');
+        document.getElementById('error-statut').innerText =
+            "Le statut est obligatoire.";
+    }
+
+    // Logo : optionnel, donc pas de "obligatoire" ici
+
+    if (hasError) {
+        e.preventDefault();
+    }
+});
+</script>
+
 </body>
 </html>
