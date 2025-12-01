@@ -1,5 +1,5 @@
 <?php
-require_once '../../Controllers/ReclamationController.php'; 
+require_once __DIR__ . '/../../controllers/ReclamationController.php'; 
 
 // Créer une instance de ReclamationController
 $reclamationController = new ReclamationController();
@@ -83,7 +83,7 @@ $reclamations = $reclamationController->getReclamation();
         }
 
         th {
-            background-color: #4CAF50;
+            background-color: #182018ff;
             color: white;
             font-size: 16px;
         }
@@ -154,10 +154,11 @@ $reclamations = $reclamationController->getReclamation();
             <div class="align-self-center collapse navbar-collapse flex-fill d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
                 <div class="flex-fill">
                     <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto">
-                        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                         <li class="nav-item"><a class="nav-link" href="evenement.php">Événement</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Dons</a></li>
-                        <li class="nav-item"><a class="nav-link" href="ListeReclamation.php">Reclamation</a></li>
+                        <li class="nav-item"><a class="nav-link" href="ListeReclamation.php">mes Reclamation</a></li>
+                        
+                        <li class="nav-item"><a class="nav-link" href="AddReclamation.php">reclamation</a></li>
                         <li class="nav-item"><a class="nav-link" href="sign-in.php">Sign in</a></li>
                     </ul>
                 </div>
@@ -213,10 +214,10 @@ $reclamations = $reclamationController->getReclamation();
                     <?php foreach ($reclamations as $reclamation ): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($reclamation['id']); ?></td>
-                            <td><?php echo htmlspecialchars($reclamation['nom']); ?></td>
-                            <td><?php echo htmlspecialchars($reclamation['prenom']); ?></td>
-                            <td><?php echo htmlspecialchars($reclamation['telephone']); ?></td>
-                            <td><?php echo htmlspecialchars($reclamation['email']); ?></td>
+                            <td><?php echo htmlspecialchars($reclamation['client_nom'] ?? $reclamation['nom'] ?? ''); ?></td>
+                            <td><?php echo htmlspecialchars($reclamation['client_prenom'] ?? $reclamation['prenom'] ?? ''); ?></td>
+                            <td><?php echo htmlspecialchars($reclamation['client_telephone'] ?? $reclamation['telephone'] ?? ''); ?></td>
+                            <td><?php echo htmlspecialchars($reclamation['client_email'] ?? $reclamation['email'] ?? ''); ?></td>
                             <td><?php echo htmlspecialchars($reclamation['gouvernorat']); ?></td>
                             <td><?php echo htmlspecialchars($reclamation['delegation']); ?></td>
                             <td><?php echo htmlspecialchars($reclamation['ville']); ?></td>
@@ -224,7 +225,7 @@ $reclamations = $reclamationController->getReclamation();
                             <td><?php echo htmlspecialchars($reclamation['description_detaillee']); ?></td>
                             <td><?php echo htmlspecialchars($reclamation['priorite']); ?></td>
                             <td><?php echo htmlspecialchars($reclamation['statut']); ?></td>
-                            <td><?php echo htmlspecialchars($reclamation['date']); ?></td>
+                            <td><?php echo htmlspecialchars($reclamation['date_creation'] ?? $reclamation['date'] ?? ''); ?></td>
                             <td>
                                 <a href="UpdateReclamation.php?id=<?php echo urlencode($reclamation['id']); ?>" class="update-btn">Modifier</a>
                                 <a href="Suppreclamation.php?id=<?php echo urlencode($reclamation['id']); ?>" class="delete-btn">Supprimer</a>

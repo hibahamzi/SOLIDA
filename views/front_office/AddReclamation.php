@@ -1,6 +1,6 @@
 <?php
 // addReclamation.php (Version Stylisée et Minimaliste)
-require_once '../../Controllers/ReclamationController.php';
+require_once __DIR__ . '/../../controllers/ReclamationController.php';
 
 // Initialisation des variables pour pré-remplir (si échec de la soumission)
 $nom = isset($_POST['nom']) ? htmlspecialchars($_POST['nom']) : "";
@@ -16,6 +16,9 @@ $priorite_selectionnee = isset($_POST['priorite']) ? $_POST['priorite'] : 'Norma
 $message_soumission = ''; 
 $date = isset($_POST['date']) ? $_POST['date'] : date('Y-m-d');
 
+// Variables pour les erreurs de champs spécifiques
+$erreurs_champs = [];
+
 // Liste des gouvernorats et délégations
 $data = [
     'Ariana' => ['Ariana Ville', 'Soukra', 'Raoued', 'Sidi Thabet'],
@@ -27,38 +30,82 @@ $data = [
 // Traitement de la Soumission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $erreurs = [];
+    
+    // Validation du nom
     if (empty($_POST['nom'])) {
         $erreurs[] = "Le nom est obligatoire.";
-    } elseif (strlen($_POST['nom']) < 3) {
-        $erreurs[] = "Le nom doit contenir au moins 3 caractères.";
-    } elseif (!preg_match('/^[a-zA-Z]+$/', $_POST['nom'])) {
-        $erreurs[] = "Le nom ne doit contenir que des lettres.";
+        $erreurs_champs['nom'] = "Le nom est obligatoire.";
+    } elseif (strlen($_POST['nom']) < 2) {
+        $erreurs[] = "Le nom doit contenir au moins 2 caractères.";
+        $erreurs_champs['nom'] = "Le nom doit contenir au moins 2 caractères.";
+    } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s]+$/', $_POST['nom'])) {
+        $erreurs[] = "Le nom ne doit contenir que des lettres et espaces.";
+        $erreurs_champs['nom'] = "Le nom ne doit contenir que des lettres et espaces.";
     }
+    
+    // Validation du prénom
     if (empty($_POST['prenom'])) {
         $erreurs[] = "Le prénom est obligatoire.";
-    } elseif (strlen($_POST['prenom']) < 3) {
-        $erreurs[] = "Le prénom doit contenir au moins 3 caractères.";
-    } elseif (!preg_match('/^[a-zA-Z]+$/', $_POST['prenom'])) {
-        $erreurs[] = "Le prénom ne doit contenir que des lettres.";
+        $erreurs_champs['prenom'] = "Le prénom est obligatoire.";
+    } elseif (strlen($_POST['prenom']) < 2) {
+        $erreurs[] = "Le prénom doit contenir au moins 2 caractères.";
+        $erreurs_champs['prenom'] = "Le prénom doit contenir au moins 2 caractères.";
+    } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s]+$/', $_POST['prenom'])) {
+        $erreurs[] = "Le prénom ne doit contenir que des lettres et espaces.";
+        $erreurs_champs['prenom'] = "Le prénom ne doit contenir que des lettres et espaces.";
     }
+    
+    // Validation du téléphone
     if (empty($_POST['telephone'])) {
         $erreurs[] = "Le téléphone est obligatoire.";
+        $erreurs_champs['telephone'] = "Le téléphone est obligatoire.";
     } elseif (!preg_match('/^[0-9]+$/', $_POST['telephone'])) {
         $erreurs[] = "Le téléphone ne doit contenir que des chiffres.";
+        $erreurs_champs['telephone'] = "Le téléphone ne doit contenir que des chiffres.";
+    } elseif (strlen($_POST['telephone']) !== 8) {
+        $erreurs[] = "Le téléphone doit contenir exactement 8 chiffres.";
+        $erreurs_champs['telephone'] = "Le téléphone doit contenir exactement 8 chiffres.";
     }
+    
+    // Validation de l'email
     if (empty($_POST['email'])) {
         $erreurs[] = "L'email est obligatoire.";
+        $erreurs_champs['email'] = "L'email est obligatoire.";
     } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-        $erreurs[] = "L'email est invalide (doit contenir @).";
+        $erreurs[] = "L'email est invalide.";
+        $erreurs_champs['email'] = "L'email est invalide.";
+    } elseif (!preg_match('/@gmail\.com$/i', $_POST['email'])) {
+        $erreurs[] = "L'email doit être un email Gmail (@gmail.com).";
+        $erreurs_champs['email'] = "L'email doit être un email Gmail (@gmail.com).";
     }
-    if (empty($_POST['gouvernorat'])) $erreurs[] = "Le gouvernorat est obligatoire.";
-    if (empty($_POST['delegation'])) $erreurs[] = "La délégation est obligatoire.";
+    
+    if (empty($_POST['gouvernorat'])) {
+        $erreurs[] = "Le gouvernorat est obligatoire.";
+        $erreurs_champs['gouvernorat'] = "Le gouvernorat est obligatoire.";
+    }
+    
+    if (empty($_POST['delegation'])) {
+        $erreurs[] = "La délégation est obligatoire.";
+        $erreurs_champs['delegation'] = "La délégation est obligatoire.";
+    }
+    
+    // Validation de la description
     if (empty($_POST['description_detaillee'])) {
         $erreurs[] = "La description est obligatoire.";
+        $erreurs_champs['description_detaillee'] = "La description est obligatoire.";
     } elseif (strlen($_POST['description_detaillee']) < 10) {
         $erreurs[] = "La description doit contenir au moins 10 caractères.";
+        $erreurs_champs['description_detaillee'] = "La description doit contenir au moins 10 caractères.";
     }
-    if (empty($_POST['position_gps'])) $erreurs[] = "La position GPS est obligatoire.";
+    
+    // Validation de la position GPS (maintenant en écriture)
+    if (empty($_POST['position_gps'])) {
+        $erreurs[] = "L'adresse est obligatoire.";
+        $erreurs_champs['position_gps'] = "L'adresse est obligatoire.";
+    } elseif (strlen($_POST['position_gps']) < 10) {
+        $erreurs[] = "L'adresse doit contenir au moins 10 caractères.";
+        $erreurs_champs['position_gps'] = "L'adresse doit contenir au moins 10 caractères.";
+    }
 
     if (!empty($erreurs)) {
          $message_soumission = '<p class="error-message">❌ Erreur de validation :<br>' . implode('<br>', $erreurs) . '</p>';
@@ -82,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ReclamationController->addReclamation($reclamation);
 
         $email_redirect = urlencode($_POST['email'] ?? '');
-        header('Location: mesReclamations.php?success=1&email=' . $email_redirect);
+        header('Location: listeReclamation.php?success=1&email=' . $email_redirect);
         exit;
     }
 }
@@ -271,6 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flex: 1; 
             display: flex; 
             flex-direction: column; 
+            position: relative;
         }
         
         label { 
@@ -300,11 +348,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         /* Style pour les champs en erreur */
-        .input-error { border-color: var(--color-error) !important; }
+        .input-error { 
+            border-color: var(--color-error) !important; 
+            box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.2) !important;
+        }
         .validation-error { 
             color: var(--color-error); 
             font-size: 0.85rem; 
             margin-top: 5px; 
+            font-weight: 500;
+        }
+
+        /* Compteur de caractères */
+        .char-counter {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 5px;
+        }
+        .char-counter.warning {
+            color: #ff9800;
+        }
+        .char-counter.error {
+            color: var(--color-error);
         }
 
         /* Préfixe Téléphone */
@@ -337,7 +403,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transition: background-color 0.3s;
         }
         .input-group-gps button:hover { background-color: var(--color-dark); }
-        .input-group-gps small { font-size: 0.8rem; color: #6c757d; margin-top: 5px; }
+        .gps-help { 
+            font-size: 0.8rem; 
+            color: #6c757d; 
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .gps-help i {
+            color: var(--color-primary);
+        }
 
         /* Priorité Group */
         .priorite-group { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -532,18 +608,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <?php echo $message_soumission; ?>
 
-            <form method="POST"> 
+            <form method="POST" id="reclamationForm"> 
                 
                 <div class="form-section-title"><span>&#x1F464;</span> Informations Personnelles</div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="nom" >Nom</label>
-                        <input type="text" id="nom" name="nom" value="<?php echo $nom; ?>" required pattern="[a-zA-Z]+" minlength="3" title="Le nom doit contenir au moins 3 lettres.">
-                        
+                        <label for="nom" class="required">Nom</label>
+                        <input type="text" id="nom" name="nom" value="<?php echo $nom; ?>" placeholder="Votre nom">
+                        <?php if (isset($erreurs_champs['nom'])): ?>
+                            <div class="validation-error"><?php echo $erreurs_champs['nom']; ?></div>
+                        <?php endif; ?>
                     </div>
                     <div class="form-group">
                         <label for="prenom" class="required">Prénom</label>
-                        <input type="text" id="prenom" name="prenom" value="<?php echo $prenom; ?>" required pattern="[a-zA-Z]+" minlength="3" title="Le prénom doit contenir au moins 3 lettres.">
+                        <input type="text" id="prenom" name="prenom" value="<?php echo $prenom; ?>" placeholder="Votre prénom">
+                        <?php if (isset($erreurs_champs['prenom'])): ?>
+                            <div class="validation-error"><?php echo $erreurs_champs['prenom']; ?></div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="form-row">
@@ -551,13 +632,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="telephone" class="required">Téléphone</label>
                         <div class="input-group-tel">
                             <span class="prefix">+216</span>
-                            <input type="text" id="telephone" name="telephone" value="<?php echo $telephone; ?>" required pattern="[0-9]+" title="Seuls les chiffres sont autorisés">
-                         
+                            <input type="text" id="telephone" name="telephone" value="<?php echo $telephone; ?>" placeholder="12345678" maxlength="8">
                         </div>
+                        <?php if (isset($erreurs_champs['telephone'])): ?>
+                            <div class="validation-error"><?php echo $erreurs_champs['telephone']; ?></div>
+                        <?php endif; ?>
+                        <div class="char-counter" id="telephone-counter">0/8 chiffres</div>
                     </div>
                     <div class="form-group">
                         <label for="email" class="required">Email</label>
-                        <input type="email" id="email" name="email" value="<?php echo $email; ?>" required title="Doit être un email valide (contenir @)">
+                        <input type="text" id="email" name="email" value="<?php echo $email; ?>" placeholder="votre@gmail.com">
+                        <?php if (isset($erreurs_champs['email'])): ?>
+                            <div class="validation-error"><?php echo $erreurs_champs['email']; ?></div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -565,7 +652,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-row">
                     <div class="form-group">
                         <label for="gouvernorat" class="required">Gouvernorat</label>
-                        <select id="gouvernorat" name="gouvernorat" required>
+                        <select id="gouvernorat" name="gouvernorat">
                             <option value="">-- Choisir un gouvernorat --</option>
                             <?php
                             foreach (array_keys($data) as $gouvernorat) {
@@ -574,10 +661,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             }
                             ?>
                         </select>
+                        <?php if (isset($erreurs_champs['gouvernorat'])): ?>
+                            <div class="validation-error"><?php echo $erreurs_champs['gouvernorat']; ?></div>
+                        <?php endif; ?>
                     </div>
                     <div class="form-group">
                         <label for="delegation" class="required">Délégation</label>
-                        <select id="delegation" name="delegation" required>
+                        <select id="delegation" name="delegation">
                             <option value="">-- Choisir d'abord le gouvernorat --</option>
                             <?php
                             if (isset($data[$gouvernorat_selectionne])) {
@@ -588,6 +678,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             }
                             ?>
                         </select>
+                        <?php if (isset($erreurs_champs['delegation'])): ?>
+                            <div class="validation-error"><?php echo $erreurs_champs['delegation']; ?></div>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
@@ -597,30 +690,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="text" id="ville" name="ville" value="<?php echo $ville; ?>" placeholder="Ex: El Battan">
                     </div>
                     <div class="form-group">
-                        <label for="position_gps" class="required">Position GPS</label>
+                        <label for="position_gps" class="required">Adresse complète</label>
                         <div class="input-group-gps">
-                            <input type="text" id="position_gps" name="position_gps" required
-                                value="<?php echo $position_gps; ?>" placeholder="Latitude, Longitude ou Adresse">
+                            <input type="text" id="position_gps" name="position_gps" value="<?php echo $position_gps; ?>" placeholder="Ex: Rue Habib Bourguiba, Tunis, Tunisie">
                             <button type="button" onclick="getLocalisation()">
                                 &#x1F4CD; Localiser 
                             </button>
                         </div>
-                        <small>Cliquez sur "Localiser" pour détecter automatiquement votre position</small>
+                        <div class="gps-help">
+                            <i class="fas fa-info-circle"></i>
+                            Cliquez sur "Localiser" pour détecter automatiquement votre adresse complète
+                        </div>
+                        <?php if (isset($erreurs_champs['position_gps'])): ?>
+                            <div class="validation-error"><?php echo $erreurs_champs['position_gps']; ?></div>
+                        <?php endif; ?>
+                        <div class="char-counter" id="gps-counter">0 caractères (minimum 10)</div>
                     </div>
                 </div>
 
                 <div class="form-section-title"><span>&#x1F4DD;</span> Détails de la Réclamation</div>
 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="categorie">Catégorie *</label>
-                        <select id="categorie" name="categorie">
-                            <option value="">-- Choisir une catégorie --</option>
-                            <option value="Route">Route</option>
-                            <option value="Eclairage">Éclairage Public</option>
-                            <option value="Proprete">Propreté</option>
-                        </select>
-                    </div>
                     <div class="form-group">
                         <label for="priorite">Priorité *</label>
                         <div class="priorite-group" id="priorite-group">
@@ -637,11 +727,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
                 </div>
-                
 
                 <div class="form-group">
                     <label for="description_detaillee" class="required">Description détaillée</label>
-                    <textarea id="description_detaillee" name="description_detaillee" rows="6" placeholder="Décrivez votre réclamation en détail..." minlength="10" required><?php echo $description; ?></textarea>
+                    <textarea id="description_detaillee" name="description_detaillee" rows="6" placeholder="Décrivez votre réclamation en détail (minimum 10 caractères)..."><?php echo $description; ?></textarea>
+                    <?php if (isset($erreurs_champs['description_detaillee'])): ?>
+                        <div class="validation-error"><?php echo $erreurs_champs['description_detaillee']; ?></div>
+                    <?php endif; ?>
+                    <div class="char-counter" id="description-counter">0 caractères (minimum 10)</div>
                 </div>
 
                 <button type="submit" class="submit-btn">
@@ -656,9 +749,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
         const navMenu = document.querySelector('.nav-menu');
 
-        mobileMenuBtn.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
+        if (mobileMenuBtn && navMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+            });
+        }
 
         // Script JS pour les dépendances Gouvernorat/Délégation et la Priorité
         const dataJs = <?php echo json_encode($data); ?>;
@@ -667,26 +762,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const initialDelegationValue = "<?php echo $delegation_selectionnee; ?>";
 
         function updateDelegations(gouvernorat, initialValue = null) {
-            delegationSelect.innerHTML = '<option value="">-- Choisir une délégation --</option>';
-            if (gouvernorat && dataJs[gouvernorat]) {
-                dataJs[gouvernorat].forEach(delegation => {
-                    const option = document.createElement('option');
-                    option.value = delegation;
-                    option.textContent = delegation;
-                    if (delegation === initialValue) {
-                        option.selected = true;
-                    }
-                    delegationSelect.appendChild(option);
-                });
+            if (delegationSelect) {
+                delegationSelect.innerHTML = '<option value="">-- Choisir une délégation --</option>';
+                if (gouvernorat && dataJs[gouvernorat]) {
+                    dataJs[gouvernorat].forEach(delegation => {
+                        const option = document.createElement('option');
+                        option.value = delegation;
+                        option.textContent = delegation;
+                        if (delegation === initialValue) {
+                            option.selected = true;
+                        }
+                        delegationSelect.appendChild(option);
+                    });
+                }
             }
         }
         
-        gouvernoratSelect.addEventListener('change', function() {
-            updateDelegations(this.value);
-        });
+        if (gouvernoratSelect) {
+            gouvernoratSelect.addEventListener('change', function() {
+                updateDelegations(this.value);
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const selectedGouvernorat = gouvernoratSelect.value;
+            const selectedGouvernorat = gouvernoratSelect ? gouvernoratSelect.value : '';
             if (selectedGouvernorat) {
                 updateDelegations(selectedGouvernorat, initialDelegationValue);
             }
@@ -695,85 +794,458 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const prioriteBtns = document.querySelectorAll('.priorite-btn');
         const prioriteInput = document.getElementById('priorite_input');
 
-        prioriteBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                prioriteBtns.forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                prioriteInput.value = this.getAttribute('data-value');
+        if (prioriteBtns.length > 0 && prioriteInput) {
+            prioriteBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    prioriteBtns.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    prioriteInput.value = this.getAttribute('data-value');
+                });
             });
-        });
+        }
 
-        // Fonction de géolocalisation
+        // Validation en temps réel pour tous les champs
+        const nomInput = document.getElementById('nom');
+        const prenomInput = document.getElementById('prenom');
+        const telephoneInput = document.getElementById('telephone');
+        const emailInput = document.getElementById('email');
+        const gpsInput = document.getElementById('position_gps');
+        const descriptionInput = document.getElementById('description_detaillee');
+        const telephoneCounter = document.getElementById('telephone-counter');
+        const descriptionCounter = document.getElementById('description-counter');
+        const gpsCounter = document.getElementById('gps-counter');
+
+        // Validation Nom
+        if (nomInput) {
+            nomInput.addEventListener('input', function() {
+                validateNomField(this);
+            });
+
+            nomInput.addEventListener('blur', function() {
+                validateNomField(this);
+            });
+        }
+
+        // Validation Prénom
+        if (prenomInput) {
+            prenomInput.addEventListener('input', function() {
+                validatePrenomField(this);
+            });
+
+            prenomInput.addEventListener('blur', function() {
+                validatePrenomField(this);
+            });
+        }
+
+        // Validation Téléphone
+        if (telephoneInput && telephoneCounter) {
+            telephoneInput.addEventListener('input', function() {
+                validateTelephoneField(this);
+                updateTelephoneCounter(this.value);
+            });
+
+            telephoneInput.addEventListener('blur', function() {
+                validateTelephoneField(this);
+            });
+
+            // Initialiser le compteur
+            updateTelephoneCounter(telephoneInput.value);
+        }
+
+        // Validation Email
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                validateEmailField(this);
+            });
+
+            emailInput.addEventListener('blur', function() {
+                validateEmailField(this);
+            });
+        }
+
+        // Validation GPS (maintenant en écriture)
+        if (gpsInput && gpsCounter) {
+            gpsInput.addEventListener('input', function() {
+                validateGPSField(this);
+                updateGPSCounter(this.value);
+            });
+
+            gpsInput.addEventListener('blur', function() {
+                validateGPSField(this);
+            });
+
+            // Initialiser le compteur
+            updateGPSCounter(gpsInput.value);
+        }
+
+        // Validation Description
+        if (descriptionInput && descriptionCounter) {
+            descriptionInput.addEventListener('input', function() {
+                validateDescriptionField(this);
+                updateDescriptionCounter(this.value);
+            });
+
+            descriptionInput.addEventListener('blur', function() {
+                validateDescriptionField(this);
+            });
+
+            // Initialiser le compteur
+            updateDescriptionCounter(descriptionInput.value);
+        }
+
+        function validateNomField(field) {
+            const value = field.value.trim();
+            const errorDiv = document.getElementById('nom-error');
+            
+            field.classList.remove('input-error');
+            
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+            
+            if (value === '') {
+                return;
+            }
+            
+            if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(value)) {
+                showFieldError(field, 'Le nom doit contenir uniquement des lettres et espaces', 'nom');
+                return;
+            }
+            
+            if (value.length < 2) {
+                showFieldError(field, 'Le nom doit contenir au moins 2 caractères', 'nom');
+                return;
+            }
+        }
+
+        function validatePrenomField(field) {
+            const value = field.value.trim();
+            const errorDiv = document.getElementById('prenom-error');
+            
+            field.classList.remove('input-error');
+            
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+            
+            if (value === '') {
+                return;
+            }
+            
+            if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(value)) {
+                showFieldError(field, 'Le prénom doit contenir uniquement des lettres et espaces', 'prenom');
+                return;
+            }
+            
+            if (value.length < 2) {
+                showFieldError(field, 'Le prénom doit contenir au moins 2 caractères', 'prenom');
+                return;
+            }
+        }
+
+        function validateTelephoneField(field) {
+            const value = field.value.trim();
+            const errorDiv = document.getElementById('telephone-error');
+            
+            field.classList.remove('input-error');
+            
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+            
+            if (value === '') {
+                return;
+            }
+            
+            if (!/^[0-9]+$/.test(value)) {
+                showFieldError(field, 'Le téléphone ne doit contenir que des chiffres', 'telephone');
+                return;
+            }
+            
+            if (value.length !== 8) {
+                showFieldError(field, 'Le téléphone doit contenir exactement 8 chiffres', 'telephone');
+                return;
+            }
+        }
+
+        function validateEmailField(field) {
+            const value = field.value.trim();
+            const errorDiv = document.getElementById('email-error');
+            
+            field.classList.remove('input-error');
+            
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+            
+            if (value === '') {
+                return;
+            }
+            
+            // Validation email basique
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                showFieldError(field, 'L\'email est invalide', 'email');
+                return;
+            }
+            
+            // Validation Gmail spécifique
+            if (!/@gmail\.com$/i.test(value)) {
+                showFieldError(field, 'L\'email doit être un email Gmail (@gmail.com)', 'email');
+                return;
+            }
+        }
+
+        function validateGPSField(field) {
+            const value = field.value.trim();
+            const errorDiv = document.getElementById('position_gps-error');
+            
+            field.classList.remove('input-error');
+            
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+            
+            if (value === '') {
+                return;
+            }
+            
+            // Validation de l'adresse en écriture (minimum 10 caractères)
+            if (value.length < 10) {
+                showFieldError(field, 'L\'adresse doit contenir au moins 10 caractères', 'position_gps');
+                return;
+            }
+        }
+
+        function validateDescriptionField(field) {
+            const value = field.value.trim();
+            const errorDiv = document.getElementById('description_detaillee-error');
+            
+            field.classList.remove('input-error');
+            
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+            
+            if (value === '') {
+                return;
+            }
+            
+            if (value.length < 10) {
+                showFieldError(field, 'La description doit contenir au moins 10 caractères', 'description_detaillee');
+                return;
+            }
+        }
+
+        function updateTelephoneCounter(value) {
+            if (telephoneCounter) {
+                const count = value.replace(/[^0-9]/g, '').length;
+                telephoneCounter.textContent = `${count}/8 chiffres`;
+                
+                if (count === 8) {
+                    telephoneCounter.className = 'char-counter';
+                } else if (count > 0) {
+                    telephoneCounter.className = 'char-counter warning';
+                } else {
+                    telephoneCounter.className = 'char-counter';
+                }
+            }
+        }
+
+        function updateGPSCounter(value) {
+            if (gpsCounter) {
+                const count = value.length;
+                gpsCounter.textContent = `${count} caractères (minimum 10)`;
+                
+                if (count >= 10) {
+                    gpsCounter.className = 'char-counter';
+                } else if (count > 0) {
+                    gpsCounter.className = 'char-counter warning';
+                } else {
+                    gpsCounter.className = 'char-counter';
+                }
+            }
+        }
+
+        function updateDescriptionCounter(value) {
+            if (descriptionCounter) {
+                const count = value.length;
+                descriptionCounter.textContent = `${count} caractères (minimum 10)`;
+                
+                if (count >= 10) {
+                    descriptionCounter.className = 'char-counter';
+                } else if (count > 0) {
+                    descriptionCounter.className = 'char-counter warning';
+                } else {
+                    descriptionCounter.className = 'char-counter';
+                }
+            }
+        }
+
+        function showFieldError(field, message, fieldName) {
+            // Ajouter la classe d'erreur au champ
+            field.classList.add('input-error');
+            
+            // Créer ou mettre à jour le message d'erreur
+            let errorDiv = document.getElementById(fieldName + '-error');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = fieldName + '-error';
+                errorDiv.className = 'validation-error';
+                field.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+        }
+
+        // Fonction de géolocalisation améliorée avec gestion d'erreurs
         function getLocalisation() {
             const options = {
                 enableHighAccuracy: true,
-                timeout: 5000, // 5 secondes
-                maximumAge: 0
+                timeout: 15000, // 15 secondes
+                maximumAge: 60000 // 1 minute
             };
+            
             const gpsInput = document.getElementById('position_gps');
             const villeInput = document.getElementById('ville');
 
-gpsInput.value = 'Localisation en cours...';
+            if (gpsInput) {
+                gpsInput.value = '📍 Localisation en cours...';
 
-	            if (navigator.geolocation) {
-	                navigator.geolocation.getCurrentPosition(
-                    (position) => {
+                if (!navigator.geolocation) {
+                    gpsInput.value = "La géolocalisation n'est pas supportée par votre navigateur";
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
-                        const accuracy = position.coords.accuracy; // Récupérer la précision
+                        const accuracy = position.coords.accuracy;
                         
-                       // Afficher la précision pour l'utilisateur (bel ktiba)
-	                        gpsInput.value = `Localisation précise (${accuracy.toFixed(2)}m)...`;
-	                        
-	                        // Appel direct à Nominatim (plus fiable que le proxy)
-	                        const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
-	
-	                        fetch(apiUrl)
-	                            .then(response => response.json())
-	                            .then(data => {
-	                                if (data.display_name) {
-	                                    // Affichage "bel ktiba" : adresse complète uniquement (selon la demande)
-	                                    gpsInput.value = data.display_name;
-	                                    const ville = data.address.city || data.address.town || data.address.village || "";
-	                                    villeInput.value = ville;
-	                                } else {
-	                                    // Affichage d'un message d'erreur clair si l'adresse n'est pas trouvée
-	                                    gpsInput.value = "Adresse non trouvée. Veuillez la saisir manuellement.";
-	                                }
-	                            })
-                            .catch(err => {
-	                                console.error("Erreur de géocodage :", err);
-	                                // Affichage d'un message d'erreur clair en cas d'échec de l'API
-	                                gpsInput.value = "Erreur de géocodage. Veuillez la saisir manuellement.";
-	                            });
+                        gpsInput.value = `📍 Position détectée (précision: ${Math.round(accuracy)}m)...`;
+                        
+                        // Essayer plusieurs services de géocodage
+                        await tryGeocodingServices(lat, lon, gpsInput, villeInput);
                     },
                     (error) => {
-                        let errorMessage = "Erreur de géolocalisation : ";
+                        let errorMessage = "❌ ";
                         switch(error.code) {
                             case error.PERMISSION_DENIED:
-                                errorMessage += "Permission refusée par l'utilisateur.";
+                                errorMessage += "Permission de géolocalisation refusée. Veuillez autoriser l'accès à votre position ou saisir l'adresse manuellement.";
                                 break;
                             case error.POSITION_UNAVAILABLE:
-                                errorMessage += "Information de position non disponible.";
+                                errorMessage += "Position indisponible. Vérifiez votre connexion GPS ou saisissez l'adresse manuellement.";
                                 break;
                             case error.TIMEOUT:
-                                errorMessage += "La requête a expiré.";
+                                errorMessage += "Délai de localisation dépassé. Veuillez saisir l'adresse manuellement.";
                                 break;
-                            case error.UNKNOWN_ERROR:
-                                errorMessage += "Erreur inconnue.";
-                                break;
+                            default:
+                                errorMessage += "Erreur de géolocalisation. Veuillez saisir l'adresse manuellement.";
                         }
                         gpsInput.value = errorMessage;
-                        alert(errorMessage + " Veuillez autoriser la géolocalisation.");
                     },
-                    options // Ajout des options pour la haute précision
+                    options
                 );
-            } else {
-                gpsInput.value = "Géolocalisation non supportée";
             }
         }
-    </script>
 
+        // Essayer plusieurs services de géocodage
+        async function tryGeocodingServices(lat, lon, gpsInput, villeInput) {
+            const services = [
+                {
+                    name: 'OpenStreetMap',
+                    url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=fr`
+                },
+                {
+                    name: 'BigDataCloud',
+                    url: `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=fr`
+                },
+                {
+                    name: 'PositionStack',
+                    url: `https://api.positionstack.com/v1/reverse?access_key=demo&query=${lat},${lon}`
+                }
+            ];
+
+            for (let service of services) {
+                try {
+                    const response = await fetchWithTimeout(service.url, 5000);
+                    
+                    if (!response.ok) continue;
+                    
+                    const data = await response.json();
+                    const address = extractAddress(data, service.name);
+                    
+                    if (address) {
+                        gpsInput.value = address.formatted;
+                        if (villeInput && address.city) {
+                            villeInput.value = address.city;
+                        }
+                        updateGPSCounter(gpsInput.value);
+                        return;
+                    }
+                } catch (error) {
+                    console.log(`Service ${service.name} a échoué:`, error);
+                    continue;
+                }
+            }
+            
+            // Si tous les services échouent, utiliser les coordonnées avec un message
+            gpsInput.value = `📍 Position: ${lat.toFixed(6)}, ${lon.toFixed(6)} - Veuillez décrire l'adresse manuellement`;
+        }
+
+        // Fonction fetch avec timeout
+        function fetchWithTimeout(url, timeout = 5000) {
+            return Promise.race([
+                fetch(url),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), timeout)
+                )
+            ]);
+        }
+
+        // Extraire l'adresse selon le service
+        function extractAddress(data, serviceName) {
+            switch(serviceName) {
+                case 'OpenStreetMap':
+                    if (data.display_name) {
+                        return {
+                            formatted: data.display_name,
+                            city: data.address.city || data.address.town || data.address.village
+                        };
+                    }
+                    break;
+                    
+                case 'BigDataCloud':
+                    if (data.locality) {
+                        return {
+                            formatted: `${data.locality}, ${data.city || data.principalSubdivision}, ${data.countryName}`,
+                            city: data.locality
+                        };
+                    }
+                    break;
+                    
+                case 'PositionStack':
+                    if (data.data && data.data[0]) {
+                        const location = data.data[0];
+                        return {
+                            formatted: `${location.label || ''}`,
+                            city: location.locality
+                        };
+                    }
+                    break;
+            }
+            return null;
+        }
+
+        // Exemples d'adresses pour la Tunisie (au chargement de la page)
+        document.addEventListener('DOMContentLoaded', function() {
+            const gpsInput = document.getElementById('position_gps');
+            if (gpsInput && !gpsInput.value) {
+                gpsInput.placeholder = "Ex: Rue Habib Bourguiba, Tunis, Tunisie";
+            }
+        });
+    </script>
+    
     <!-- Font Awesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Start Footer -->
@@ -798,20 +1270,7 @@ gpsInput.value = 'Localisation en cours...';
                         </li>
                     </ul>
                 </div>
-<!--
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 text-light border-bottom pb-3 border-light">Products</h2>
-                    <ul class="list-unstyled text-light footer-link-list">
-                        <li><a class="text-decoration-none" href="#">Luxury</a></li>
-                        <li><a class="text-decoration-none" href="#">Sport Wear</a></li>
-                        <li><a class="text-decoration-none" href="#">Men's Shoes</a></li>
-                        <li><a class="text-decoration-none" href="#">Women's Shoes</a></li>
-                        <li><a class="text-decoration-none" href="#">Popular Dress</a></li>
-                        <li><a class="text-decoration-none" href="#">Gym Accessories</a></li>
-                        <li><a class="text-decoration-none" href="#">Sport Shoes</a></li>
-                    </ul>
-                </div>
--->
+
                 <div class="col-md-4 pt-5">
                     <h2 class="h2 text-light border-bottom pb-3 border-light">Further Info</h2>
                     <ul class="list-unstyled text-light footer-link-list">

@@ -4,11 +4,72 @@ require_once __DIR__ . '/../../controllers/ReclamationController.php';
 // Créer une instance de ReclamationController
 $reclamationController = new ReclamationController();
 
-// Récupérer toutes les réclamations
-$reclamations = $reclamationController->getReclamation();
+// Récupérer les statistiques
+$stats = $reclamationController->getStatistics();
+$processingTime = $reclamationController->getAverageProcessingTime();
 
-// Récupérer toutes les réponses depuis reponadmin en une seule requête
-$responses = $reclamationController->getAllResponses();
+// Récupérer les réclamations urgentes (avec gestion d'erreur)
+try {
+    $urgentReclamations = $reclamationController->getUrgentReclamations();
+    if (!is_array($urgentReclamations)) {
+        $urgentReclamations = [];
+    }
+} catch (Exception $e) {
+    error_log("Erreur lors de la récupération des réclamations urgentes: " . $e->getMessage());
+    $urgentReclamations = [];
+}
+
+$overdueReclamations = $reclamationController->getOverdueReclamations(7);
+$resolutionByGovernorate = $reclamationController->getResolutionRateByGovernorate();
+
+// Gestion de la recherche avancée
+$filters = [];
+
+// Traitement du champ nom_prenom (peut contenir nom seul ou nom + prénom séparés par espace)
+if (isset($_GET['nom_prenom']) && trim($_GET['nom_prenom']) !== '') {
+    $nom_prenom = trim($_GET['nom_prenom']);
+    $parts = preg_split('/\s+/', $nom_prenom, 2); // Séparer par espace(s)
+    
+    if (count($parts) >= 2 && strtolower(trim($parts[0])) !== strtolower(trim($parts[1]))) {
+        // Nom + Prénom différents (recherche précise : les deux doivent correspondre)
+        $filters['nom'] = trim($parts[0]);
+        $filters['prenom'] = trim($parts[1]);
+    } else {
+        // Un seul mot OU deux mots identiques : chercher dans nom OU prénom
+        // On utilise un filtre spécial pour chercher dans les deux colonnes
+        $filters['nom_ou_prenom'] = trim($parts[0]);
+    }
+}
+
+if (isset($_GET['email']) && trim($_GET['email']) !== '') $filters['email'] = trim($_GET['email']);
+
+// Récupérer les réclamations (avec filtres si présents)
+$searchDebug = '';
+if (!empty($filters)) {
+    $reclamations = $reclamationController->searchReclamations($filters);
+    // Debug: récupérer les logs
+    $searchDebug = "Filtres appliqués: " . print_r($filters, true);
+    if (empty($reclamations) && !empty($filters)) {
+        error_log("Aucun résultat trouvé avec les filtres: " . print_r($filters, true));
+    }
+} else {
+    $reclamations = $reclamationController->getReclamation();
+}
+
+// Construire le tableau des réponses à partir des résultats de la jointure
+$responses = [];
+foreach ($reclamations as $rec) {
+    if (!empty($rec['reponse_id']) && !empty($rec['reponse_text'])) {
+        $responses[$rec['id']] = [
+            'id' => $rec['reponse_id'],
+            'reponse' => $rec['reponse_text'],
+            'date' => $rec['reponse_date'] ?? null,
+            'statut' => $rec['reponse_statut'] ?? null
+        ];
+    }
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -224,6 +285,18 @@ $responses = $reclamationController->getAllResponses();
             color: #2e7d32;
         }
         
+        .priority-urgente {
+            background: #F44336 !important;
+            color: white !important;
+            font-weight: bold !important;
+            box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
         .status-nouveau {
             background: #e3f2fd;
             color: #1565c0;
@@ -249,6 +322,7 @@ $responses = $reclamationController->getAllResponses();
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            justify-content: center;
         }
         
         .btn {
@@ -263,6 +337,7 @@ $responses = $reclamationController->getAllResponses();
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
         }
         
         .btn-respond {
@@ -275,8 +350,12 @@ $responses = $reclamationController->getAllResponses();
         }
         
         .btn-update {
-            background: #50c046ff;
+            background: #2196F3;
             color: white;
+        }
+        
+        .btn-update:hover {
+            background: #1976D2;
         }
         
         .btn-delete:hover {
@@ -482,17 +561,21 @@ $responses = $reclamationController->getAllResponses();
         <?php if (isset($_GET['success'])): ?>
             <div class="alert <?php 
                 if ($_GET['success'] === 'responded_and_emailed') echo 'alert-success';
+                elseif ($_GET['success'] === 'response_updated') echo 'alert-success';
                 elseif ($_GET['success'] === 'deleted') echo 'alert-info';
                 else echo 'alert-warning';
             ?>">
                 <span style="font-size: 18px;">
                     <?php if ($_GET['success'] === 'responded_and_emailed'): ?>✅
+                    <?php elseif ($_GET['success'] === 'response_updated'): ?>✅
                     <?php elseif ($_GET['success'] === 'deleted'): ?>✅
                     <?php else: ?>⚠️<?php endif; ?>
                 </span>
                 <span>
                     <?php if ($_GET['success'] === 'responded_and_emailed'): ?>
                         Réponse enregistrée avec succès et email envoyé au client !
+                    <?php elseif ($_GET['success'] === 'response_updated'): ?>
+                        Réponse modifiée avec succès !
                     <?php elseif ($_GET['success'] === 'responded_no_email'): ?>
                         Réponse enregistrée avec succès, mais l'email n'a pas pu être envoyé (email invalide ou erreur d'envoi).
                     <?php elseif ($_GET['success'] === 'deleted'): ?>
@@ -513,6 +596,8 @@ $responses = $reclamationController->getAllResponses();
                         Erreur lors de la suppression de la réclamation. Veuillez réessayer.
                     <?php elseif ($_GET['error'] === 'invalid_id'): ?>
                         ID de réclamation invalide.
+                    <?php elseif ($_GET['error'] === 'response_not_found'): ?>
+                        Réponse non trouvée.
                     <?php else: ?>
                         Une erreur s'est produite.
                     <?php endif; ?>
@@ -520,12 +605,136 @@ $responses = $reclamationController->getAllResponses();
             </div>
         <?php endif; ?>
         
-        <!-- Statistics -->
+        <!-- Statistiques Métier -->
+        <?php if (isset($stats) && !empty($stats)): ?>
         <div class="stats-container">
             <div class="stat-card">
-                <h3><?php echo count($reclamations); ?></h3>
-                <p>📊 Réclamations totales</p>
+                <h3><?php echo isset($stats['total']) ? $stats['total'] : '0'; ?></h3>
+                <p> Réclamations totales</p>
             </div>
+            <div class="stat-card">
+                <h3><?php echo isset($stats['resolved']) ? $stats['resolved'] : '0'; ?></h3>
+                <p>Réclamations résolues</p>
+            </div>
+            <div class="stat-card">
+                <h3><?php echo isset($stats['unresolved']) ? $stats['unresolved'] : '0'; ?></h3>
+                <p> Réclamations en cours</p>
+            </div>
+            <div class="stat-card">
+                <h3><?php echo isset($stats['resolution_rate']) ? $stats['resolution_rate'] : '0'; ?>%</h3>
+                <p> Taux de résolution</p>
+            </div>
+            <div class="stat-card">
+                <h3><?php echo isset($stats['urgent']) ? $stats['urgent'] : '0'; ?></h3>
+                <p> Réclamations urgentes</p>
+            </div>
+            <div class="stat-card">
+                <h3><?php echo isset($stats['this_week']) ? $stats['this_week'] : '0'; ?></h3>
+                <p> Cette semaine</p>
+            </div>
+            
+            <?php if (isset($processingTime) && $processingTime['average_days'] > 0): ?>
+            <div class="stat-card">
+                <h3><?php echo $processingTime['average_days']; ?>j</h3>
+                <p> Temps moyen de traitement</p>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+        
+        <!-- Alertes Urgentes -->
+        <?php 
+        // Vérifier les réclamations urgentes
+        $urgent_count = 0;
+        if (isset($urgentReclamations) && is_array($urgentReclamations)) {
+            $urgent_count = count($urgentReclamations);
+        }
+        
+        // Afficher l'alerte si on a des réclamations urgentes
+        if ($urgent_count > 0): ?>
+        <div class="alert alert-danger" style="background: #ffebee; border: 2px solid #F44336; padding: 20px; margin: 20px 0; border-radius: 8px; animation: pulse 2s infinite; position: relative; z-index: 10;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 28px; color: #F44336; animation: blink 1s infinite;"></i>
+                <div style="flex: 1;">
+                    <strong style="font-size: 18px; display: block; margin-bottom: 8px;">🚨 ALERTE URGENTE !</strong>
+                    <p style="margin: 0; font-size: 16px;">
+                        <strong><?php echo $urgent_count; ?> réclamation(s) urgente(s)</strong> nécessitent une attention immédiate.
+                    </p>
+                    <div style="margin-top: 10px;">
+                        <a href="#urgent-reclamations" style="background: #F44336; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block; transition: background 0.3s;">
+                            <i class="fas fa-arrow-down"></i> Voir les réclamations urgentes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <style>
+            @keyframes pulse {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.95; transform: scale(1.01); }
+            }
+            @keyframes blink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        </style>
+        <?php endif; ?>
+        
+        <?php if (!empty($overdueReclamations)): ?>
+        <div class="alert alert-warning">
+            <i class="fas fa-clock"></i>
+            <strong>Retard !</strong> 
+            <?php echo count($overdueReclamations); ?> réclamation(s) en retard (non résolues depuis plus de 7 jours).
+        </div>
+        <?php endif; ?>
+        
+       <!-- Filtres de Recherche Avancée -->
+<div class="table-container" style="margin-bottom: 20px;">
+    <div class="table-header">
+        <h2>🔍 Recherche </h2>
+    </div>
+    <div style="padding: 25px;">
+        <form method="GET" action="" style="display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 20px; align-items: end;">
+            <!-- Champ Nom + Prénom -->
+            <div style="display: flex; flex-direction: column;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-user"></i> Nom + Prénom
+                </label>
+                <input type="text" name="nom_prenom" placeholder="Ex: Dupont Marie ou Dupont seul..." 
+                       value="<?php echo isset($_GET['nom_prenom']) ? htmlspecialchars($_GET['nom_prenom']) : ''; ?>"
+                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                
+            </div>
+            
+            <!-- Champ Email -->
+            <div style="display: flex; flex-direction: column;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="text" name="email" placeholder="Rechercher par email..." 
+                       value="<?php echo isset($_GET['email']) ? htmlspecialchars($_GET['email']) : ''; ?>"
+                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+            </div>
+            
+            <!-- Bouton Rechercher -->
+            <div>
+                <button type="submit" style="padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; white-space: nowrap; font-size: 14px; height: 44px;">
+                    <i class="fas fa-search"></i> Rechercher
+                </button>
+            </div>
+            
+            <!-- Bouton Réinitialiser -->
+            <div>
+                <a href="BackofficeReclamations.php" style="padding: 12px 24px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: center; text-decoration: none; display: inline-block; white-space: nowrap; font-size: 14px; height: 44px; line-height: 20px;">
+                    <i class="fas fa-redo"></i> Réinitialiser
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+        
+        <!-- Statistiques de Base -->
+        <div class="stats-container" style="display: none;">
             <div class="stat-card">
                 <h3><?php echo count(array_filter($reclamations, fn($r) => ($r['statut'] ?? '') === 'Nouveau' || ($r['statut'] ?? '') === 'nouveau')); ?></h3>
                 <p>🆕 Nouvelles réclamations</p>
@@ -547,8 +756,25 @@ $responses = $reclamationController->getAllResponses();
             </div>
             <?php if (empty($reclamations)): ?>
                 <div class="empty-state">
-                    <h2>📭 Aucune réclamation</h2>
-                    <p>Il n'y a pas encore de réclamations à afficher.</p>
+                    <h2>📭 Aucune réclamation trouvée</h2>
+                    <p>
+                        <?php if (!empty($filters)): ?>
+                            Aucune réclamation ne correspond à vos critères de recherche.
+                            <?php if (isset($_GET['nom_prenom']) && !empty($_GET['nom_prenom'])): ?>
+                                <br><small style="color: #999;">Recherche effectuée pour: "<?php echo htmlspecialchars($_GET['nom_prenom']); ?>"</small>
+                            <?php endif; ?>
+                            <?php if (isset($_GET['email']) && !empty($_GET['email'])): ?>
+                                <br><small style="color: #999;">Email: "<?php echo htmlspecialchars($_GET['email']); ?>"</small>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            Il n'y a pas encore de réclamations à afficher.
+                        <?php endif; ?>
+                    </p>
+                    <?php if (!empty($filters)): ?>
+                        <a href="BackofficeReclamations.php" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: #4CAF50; color: white; text-decoration: none; border-radius: 6px;">
+                            <i class="fas fa-redo"></i> Afficher toutes les réclamations
+                        </a>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <table>
@@ -567,19 +793,39 @@ $responses = $reclamationController->getAllResponses();
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <?php foreach ($reclamations as $reclamation): ?>
-                            <tr>
+                    <tbody id="urgent-reclamations">
+                        <?php foreach ($reclamations as $reclamation): 
+                            // Vérifier si c'est une réclamation urgente
+                            $is_urgent = false;
+                            $priorite = strtolower(trim($reclamation['priorite'] ?? ''));
+                            $statut = strtolower(trim($reclamation['statut'] ?? ''));
+                            
+                            // Vérifier si la priorité est urgente (gérer différentes variantes)
+                            if ($priorite === 'urgente' || $priorite === 'urgent' || stripos($priorite, 'urgent') !== false) {
+                                // Vérifier que le statut n'est pas résolu
+                                $statuts_resolus = ['résolu', 'clôturé', 'resolu', 'cloture', 'traité', 'traite', 'traitée', 'traitee'];
+                                if (!in_array($statut, $statuts_resolus) && !empty($statut)) {
+                                    $is_urgent = true;
+                                }
+                            }
+                        ?>
+                            <tr <?php echo $is_urgent ? 'style="background: #ffebee; border-left: 4px solid #F44336;"' : ''; ?>>
                                 <td><strong style="color: #4CAF50;">#<?php echo $reclamation['id']; ?></strong></td>
-                                <td><?php echo htmlspecialchars($reclamation['nom'] ?? $reclamation['client_nom'] ?? ''); ?></td>
-                                <td><?php echo htmlspecialchars($reclamation['prenom'] ?? $reclamation['client_prenom'] ?? ''); ?></td>
-                                <td><?php echo htmlspecialchars($reclamation['email'] ?? $reclamation['client_email'] ?? ''); ?></td>
-                                <td><?php echo htmlspecialchars($reclamation['telephone'] ?? $reclamation['client_telephone'] ?? ''); ?></td>
+                                <td><?php echo htmlspecialchars($reclamation['nom'] ?? $reclamation['nom'] ?? ''); ?></td>
+                                <td><?php echo htmlspecialchars($reclamation['prenom'] ?? $reclamation['prenom'] ?? ''); ?></td>
+                                <td><?php echo htmlspecialchars($reclamation['email'] ?? $reclamation['email'] ?? ''); ?></td>
+                                <td><?php echo htmlspecialchars($reclamation['telephone'] ?? $reclamation['telephone'] ?? ''); ?></td>
                                 <td><?php echo htmlspecialchars($reclamation['gouvernorat'] ?? ''); ?></td>
                                 <td>
-                                    <span class="priority-badge priority-<?php echo strtolower($reclamation['priorite'] ?? 'moyenne'); ?>">
-                                        <?php echo ucfirst($reclamation['priorite'] ?? 'Moyenne'); ?>
-                                    </span>
+                                    <?php if ($is_urgent): ?>
+                                        <span class="priority-badge priority-urgente" style="background: #F44336; color: white; font-weight: bold; animation: blink 1.5s infinite;">
+                                            <i class="fas fa-exclamation-circle"></i> <?php echo ucfirst($reclamation['priorite'] ?? 'Urgente'); ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="priority-badge priority-<?php echo strtolower($reclamation['priorite'] ?? 'moyenne'); ?>">
+                                            <?php echo ucfirst($reclamation['priorite'] ?? 'Moyenne'); ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <span class="status-badge status-<?php echo str_replace(' ', '_', strtolower($reclamation['statut'] ?? 'nouveau')); ?>">
@@ -588,31 +834,42 @@ $responses = $reclamationController->getAllResponses();
                                 </td>
                                 <td>
                                     <?php 
-                                    $response_data = $responses[$reclamation['id']] ?? null;
-                                    $has_response = !empty($response_data['reponse'] ?? '');
-                                    if ($has_response): 
-                                        $response_preview = substr($response_data['reponse'], 0, 50);
-                                        $full_response = htmlspecialchars($response_data['reponse']);
+                                    // Utiliser les données de la jointure directement
+                                    $has_response_col = !empty($reclamation['reponse_text']);
+                                    $reponse_text = $reclamation['reponse_text'] ?? '';
+                                    if ($has_response_col) {
+                                        $response_preview = substr($reponse_text, 0, 50);
+                                        $full_response = htmlspecialchars($reponse_text);
+                                    }
+                                    if ($has_response_col): 
                                     ?>
                                         <div class="response-status">
                                             <span class="response-yes">✓ Répondu</span>
                                             <span class="response-preview" title="<?php echo $full_response; ?>">
-                                                <?php echo htmlspecialchars($response_preview) . (strlen($response_data['reponse']) > 50 ? '...' : ''); ?>
+                                                <?php echo htmlspecialchars($response_preview) . (strlen($reponse_text) > 50 ? '...' : ''); ?>
                                             </span>
                                         </div>
                                     <?php else: ?>
                                         <span class="response-no">-</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?php echo date('d/m/Y', strtotime($reclamation['date'] ?? $reclamation['date_creation'] ?? 'now')); ?></td>
+                                <td><?php echo date('d/m/Y', strtotime($reclamation['date'] ?? $reclamation['date'] ?? 'now')); ?></td>
                                 <td>
                                     <div class="action-buttons">
                                         <a href="rependreReclamation.php?id=<?php echo $reclamation['id']; ?>" class="btn btn-respond">
-                                                Répondre
+                                            Répondre
                                         </a>
-                                        <a href="Updatereponce.php?id=<?php echo $reclamation['id']; ?>" class="btn btn-update" >
-                                                modifier
-                                        </a>
+                                        <?php 
+                                        // Utiliser les données de la jointure directement
+                                        $has_response = !empty($reclamation['reponse_text']);
+                                        $id_reponse = $reclamation['reponse_id'] ?? null;
+                                        
+                                        if ($has_response && $id_reponse): 
+                                        ?>
+                                            <a href="Updatereponce.php?id_reponse=<?php echo $id_reponse; ?>" class="btn btn-update">
+                                                <i class="fas fa-edit"></i> Modifier
+                                            </a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

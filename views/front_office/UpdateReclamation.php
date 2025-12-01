@@ -1,15 +1,41 @@
 <?php
-// updateReclamation.php - Version corrigée
+// updateReclamation.php (Version Stylisée et Minimaliste)
 
-require_once '../../Controllers/ReclamationController.php';
+require_once __DIR__ . '/../../Controllers/ReclamationController.php';
 
-// Initialisation des variables
-$reclamationController = new ReclamationController();
+// Récupération de l'ID de la réclamation à modifier
+$id_reclamation = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+if ($id_reclamation <= 0) {
+    die("ID de réclamation invalide");
+}
+
+// Chargement des données de la réclamation
+try {
+    $ReclamationController = new ReclamationController();
+    $reclamation = $ReclamationController->getReclamationById($id_reclamation);
+    
+    if (!$reclamation) {
+        die("Réclamation non trouvée");
+    }
+} catch (Exception $e) {
+    die("Erreur lors du chargement de la réclamation: " . $e->getMessage());
+}
+
+// Initialisation des variables pour pré-remplir avec les données existantes
+$nom = htmlspecialchars($reclamation['nom'] ?? '');
+$prenom = htmlspecialchars($reclamation['prenom'] ?? '');
+$telephone = htmlspecialchars($reclamation['telephone'] ?? '');
+$email = htmlspecialchars($reclamation['email'] ?? '');
+$ville = htmlspecialchars($reclamation['ville'] ?? '');
+$position_gps = htmlspecialchars($reclamation['position_gps'] ?? '');
+$description = htmlspecialchars($reclamation['description_detaillee'] ?? '');
+$gouvernorat_selectionne = $reclamation['gouvernorat'] ?? '';
+$delegation_selectionnee = $reclamation['delegation'] ?? '';
+$priorite_selectionnee = $reclamation['priorite'] ?? 'Normale';
 $message_soumission = '';
-$reclamation = null;
-$id = null;
 
-// Liste des gouvernorats et délégations
+// Liste des gouvernorats et délégations (pour les menus déroulants)
 $data = [
     'Ariana' => ['Ariana Ville', 'Soukra', 'Raoued', 'Sidi Thabet'],
     'Ben Arous' => ['Ben Arous Ville', 'Mourouj', 'Ezzahra', 'Hammam Lif'],
@@ -18,203 +44,128 @@ $data = [
 ];
 
 // ------------------------------
-// 1. CHARGEMENT DES DONNÉES EXISTANTES (GET)
-// ------------------------------
-if (isset($_GET['id']) && is_numeric($_GET['id'])) {
-    $id = $_GET['id'];
-    $reclamation = $reclamationController->getReclamationById($id);
-
-    if (!$reclamation) {
-        header('Location: ListReclamation.php');
-        exit;
-    }
-} else {
-    header('Location: ListReclamation.php');
-    exit;
-}
-
-// Variables pour pré-remplir
-$nom = $reclamation['nom'] ?? '';
-$prenom = $reclamation['prenom'] ?? '';
-$telephone = $reclamation['telephone'] ?? '';
-$email = $reclamation['email'] ?? '';
-$ville = $reclamation['ville'] ?? '';
-$position_gps = $reclamation['position_gps'] ?? '';
-$description = $reclamation['description_detaillee'] ?? '';
-$gouvernorat_selectionne = $reclamation['gouvernorat'] ?? '';
-$delegation_selectionnee = $reclamation['delegation'] ?? '';
-$categorie_selectionnee = $reclamation['categorie'] ?? '';
-$priorite_selectionnee = $reclamation['priorite'] ?? 'Normale';
-$statut_actuel = $reclamation['statut'] ?? 'Nouveau';
-$date_actuelle = $reclamation['date'] ?? date('Y-m-d H:i:s');
-
-// ------------------------------
-// 2. GESTION DE LA SOUMISSION (POST) - CORRIGÉE
+// 🚀 Traitement de la Soumission (Logique simple)
 // ------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = $_POST['id'];
-    
-    // Récupération des données
-    $nom = trim($_POST['nom'] ?? '');
-    $prenom = trim($_POST['prenom'] ?? '');
-    $telephone = trim($_POST['telephone'] ?? '');
-    $email = trim($_POST['email'] ?? '');
-    $ville = trim($_POST['ville'] ?? '');
-    $position_gps = trim($_POST['position_gps'] ?? '');
-    $description = trim($_POST['description_detaillee'] ?? '');
-    $gouvernorat_selectionne = $_POST['gouvernorat'] ?? '';
-    $delegation_selectionnee = $_POST['delegation'] ?? '';
-    $categorie_selectionnee = $_POST['categorie'] ?? '';
-    $priorite_selectionnee = $_POST['priorite'] ?? 'Normale';
-    $statut_actuel = $_POST['statut'] ?? 'Nouveau';
-    $date_actuelle = $_POST['date'] ?? date('Y-m-d H:i:s');
-    
-    // Validation basique
-    $erreurs = [];
-    if (empty($nom)) $erreurs[] = "Le nom est obligatoire";
-    if (empty($prenom)) $erreurs[] = "Le prénom est obligatoire";
-    if (empty($telephone)) $erreurs[] = "Le téléphone est obligatoire";
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $erreurs[] = "L'email est invalide";
-    if (empty($gouvernorat_selectionne)) $erreurs[] = "Le gouvernorat est obligatoire";
-    if (empty($delegation_selectionnee)) $erreurs[] = "La délégation est obligatoire";
-    if (empty($description)) $erreurs[] = "La description est obligatoire";
-    
-    if (empty($erreurs)) {
-        try {
-            // ✅ APPEL CORRECT AVEC 13 PARAMÈTRES
-            $success = $reclamationController->updateReclamation(
-                $id,                    // 1
-                $nom,                   // 2
-                $prenom,                // 3
-                $telephone,             // 4
-                $email,                 // 5
-                $gouvernorat_selectionne, // 6
-                $delegation_selectionnee, // 7
-                $ville,                 // 8
-                $position_gps,          // 9
-                $description,           // 10
-                $categorie_selectionnee, // 11
-                $priorite_selectionnee, // 12
-                $statut_actuel          // 13
-            );
+    // Récupération des données POST et mise à jour des variables pour pré-remplissage en cas d'erreur
+    $nom = isset($_POST['nom']) ? htmlspecialchars($_POST['nom']) : '';
+    $prenom = isset($_POST['prenom']) ? htmlspecialchars($_POST['prenom']) : '';
+    $telephone = isset($_POST['telephone']) ? htmlspecialchars($_POST['telephone']) : '';
+    $email = isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '';
+    $ville = isset($_POST['ville']) ? htmlspecialchars($_POST['ville']) : '';
+    $position_gps = isset($_POST['position_gps']) ? htmlspecialchars($_POST['position_gps']) : '';
+    $description = isset($_POST['description_detaillee']) ? htmlspecialchars($_POST['description_detaillee']) : '';
+    $gouvernorat_selectionne = isset($_POST['gouvernorat']) ? $_POST['gouvernorat'] : '';
+    $delegation_selectionnee = isset($_POST['delegation']) ? $_POST['delegation'] : '';
+    $priorite_selectionnee = isset($_POST['priorite']) ? $_POST['priorite'] : 'Normale';
+    $message_soumission = '';
 
-            if ($success) {
-                header('Location: ListReclamation.php?success=updated&id=' . $id);
-                exit;
-            } else {
-                $message_soumission = '<div class="error-message">❌ Erreur lors de la modification.</div>';
-            }
-        } catch (Exception $e) {
-            $message_soumission = '<div class="error-message">❌ Erreur: ' . $e->getMessage() . '</div>';
-        }
+    // Validation minimale côté serveur
+    $erreurs = [];
+    
+    // Validation Nom (lettres uniquement + minimum 2 caractères)
+    if (empty($_POST['nom'])) {
+        $erreurs[] = "Le nom est obligatoire.";
+    } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\-]{2,}$/u', $_POST['nom'])) {
+        $erreurs[] = "Le nom ne doit contenir que des lettres (minimum 2 caractères).";
+    }
+    
+    // Validation Prénom (lettres uniquement + minimum 2 caractères)
+    if (empty($_POST['prenom'])) {
+        $erreurs[] = "Le prénom est obligatoire.";
+    } elseif (!preg_match('/^[a-zA-ZÀ-ÿ\s\-]{2,}$/u', $_POST['prenom'])) {
+        $erreurs[] = "Le prénom ne doit contenir que des lettres (minimum 2 caractères).";
+    }
+    
+    // Validation Téléphone (exactement 8 chiffres)
+    if (empty($_POST['telephone'])) {
+        $erreurs[] = "Le téléphone est obligatoire.";
+    } elseif (!preg_match('/^[0-9]{8}$/', $_POST['telephone'])) {
+        $erreurs[] = "Le téléphone doit contenir exactement 8 chiffres.";
+    }
+    
+    // Validation Email (doit contenir @gmail.com)
+    if (empty($_POST['email'])) {
+        $erreurs[] = "L'email est obligatoire.";
+    } elseif (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+        $erreurs[] = "L'email est invalide.";
+    } elseif (!preg_match('/@gmail\.com$/i', $_POST['email'])) {
+        $erreurs[] = "L'email doit se terminer par @gmail.com";
+    }
+    
+    if (empty($_POST['gouvernorat'])) $erreurs[] = "Le gouvernorat est obligatoire.";
+    if (empty($_POST['delegation'])) $erreurs[] = "La délégation est obligatoire.";
+    
+    // Validation Description (minimum 10 caractères)
+    if (empty($_POST['description_detaillee'])) {
+        $erreurs[] = "La description est obligatoire.";
+    } elseif (strlen(trim($_POST['description_detaillee'])) < 10) {
+        $erreurs[] = "La description doit contenir au moins 10 caractères.";
+    }
+    
+    if (empty($_POST['position_gps'])) $erreurs[] = "La position GPS est obligatoire.";
+    
+    if (!empty($erreurs)) {
+         $message_soumission = '<p class="error-message">❌ Erreur de validation :<br>' . implode('<br>', $erreurs) . '</p>';
     } else {
-        $message_soumission = '<div class="error-message">❌ ' . implode('<br>', $erreurs) . '</div>';
+        $reclamation_update = [
+            'id' => $id_reclamation,
+            'nom' => $_POST['nom'] ?? '',
+            'prenom' => $_POST['prenom'] ?? '',
+            'telephone' => $_POST['telephone'] ?? '',
+            'email' => $_POST['email'] ?? '',
+            'gouvernorat' => $_POST['gouvernorat'] ?? '',
+            'delegation' => $_POST['delegation'] ?? '',
+            'ville' => $_POST['ville'] ?? '',
+            'position_gps' => $_POST['position_gps'] ?? '',
+            'description_detaillee' => $_POST['description_detaillee'] ?? '',
+            'priorite' => $_POST['priorite'] ?? 'Normale',
+            'statut' => $reclamation['statut'] ?? 'Nouveau', // Garder le statut existant
+            'date_modification' => date('Y-m-d H:i:s')
+        ];
+        
+        // Appel du contrôleur pour la mise à jour
+        $ReclamationController = new ReclamationController();
+        $result = $ReclamationController->updateReclamation($reclamation_update);
+        
+        if ($result) {
+            // Redirection en cas de succès vers "Mes Réclamations" avec l'email
+            $email_redirect = urlencode($_POST['email'] ?? '');
+            header('Location: listeReclamation.php?success=update&email=' . $email_redirect);
+            exit;
+        } else {
+            $message_soumission = '<p class="error-message">❌ Une erreur est survenue lors de la mise à jour.</p>';
+        }
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <title>SOLIDA - Modifier une Réclamation</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="apple-touch-icon" href="assets/img/apple-icon.png">
-    <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/templatemo.css">
-    <link rel="stylesheet" href="assets/css/event.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome-6.0.0/css/all.min.css">
-    
+    <title>Modifier une Réclamation - Design Vert</title>
     <style>
-        /* Votre CSS existant reste inchangé */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* Palette de Verts */
         :root {
-            --color-primary: #4CAF50;
-            --color-light: #E8F5E9;
-            --color-dark: #388E3C;
+            --color-primary: #4CAF50; /* Vert principal */
+            --color-light: #E8F5E9;   /* Vert très clair pour le fond */
+            --color-dark: #388E3C;    /* Vert foncé pour les hover */
             --color-text: #333;
-            --color-error: #F44336;
+            --color-error: #F44336;   /* Rouge pour les erreurs */
             --color-success: #4CAF50;
             --color-border: #BDBDBD;
         }
 
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: var(--color-light);
-            padding: 0;
-            margin: 0;
-            min-height: 100vh;
-        }
-
-        .top-navbar {
-            background: #343a40;
-            padding: 8px 0;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-        }
-
-        .top-nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-        }
-
-        .top-nav-left, .top-nav-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .top-nav-left a, .top-nav-right a {
-            color: white;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .main-navbar {
-            background: white;
-            padding: 15px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            top: 48px;
-            width: 100%;
-            z-index: 999;
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        .main-container {
-            margin-top: 128px;
-            padding: 40px 20px;
+            background-color: var(--color-light); 
+            padding: 20px; 
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            min-height: calc(100vh - 128px);
+            align-items: center;
+            min-height: 100vh;
         }
 
         .form-container { 
@@ -223,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #fff; 
             padding: 40px; 
             border-radius: 12px; 
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); 
         }
         
         h2 { 
@@ -234,11 +185,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: 600;
         }
 
-        h3 {
-            color: var(--color-dark); 
-            font-size: 1.2rem; 
-            margin-top: 30px; 
-            margin-bottom: 15px; 
+        .form-section-title {
+            color: var(--color-dark);
+            font-size: 1.2rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
             padding-bottom: 5px;
             border-bottom: 2px solid var(--color-light);
             font-weight: 500;
@@ -281,6 +232,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); 
         }
         
+        /* Style pour les champs en erreur */
+        .input-error { 
+            border-color: var(--color-error) !important; 
+            box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.1) !important;
+        }
+        .validation-error { 
+            color: var(--color-error); 
+            font-size: 0.85rem; 
+            margin-top: 5px; 
+            min-height: 20px;
+        }
+
+        /* Préfixe Téléphone */
         .input-group-tel { display: flex; width: 100%; }
         .input-group-tel .prefix { 
             background-color: var(--color-light); 
@@ -293,8 +257,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: bold; 
             color: var(--color-dark);
         }
-        .input-group-tel input { border-radius: 0 6px 6px 0; }
+        .input-group-tel input { 
+            border-radius: 0 6px 6px 0; 
+            max-width: 150px;
+        }
 
+        /* Bouton GPS */
         .input-group-gps { display: flex; gap: 5px; }
         .input-group-gps input { flex-grow: 1; }
         .input-group-gps button { 
@@ -311,12 +279,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .input-group-gps button:hover { background-color: var(--color-dark); }
         .input-group-gps small { font-size: 0.8rem; color: #6c757d; margin-top: 5px; }
 
+        /* Priorité Group */
         .priorite-group { display: flex; gap: 10px; margin-bottom: 20px; }
         .priorite-btn { 
             flex: 1; text-align: center; padding: 12px; border-radius: 6px; 
             cursor: pointer; font-weight: bold; color: white; transition: all 0.3s; 
             border: 2px solid transparent;
-            background-color: #A5D6A7;
+            background-color: #A5D6A7; /* Vert clair */
             color: var(--color-dark);
         }
         .priorite-btn:hover {
@@ -327,8 +296,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: var(--color-primary);
             color: white;
             box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+        } 
+
+        /* On garde une seule couleur pour la priorité pour respecter "vert akahaw" */
+        .priorite-faible, .priorite-normale, .priorite-urgente {
+            background-color: #A5D6A7;
+            color: var(--color-dark);
+        }
+        .priorite-faible.selected, .priorite-normale.selected, .priorite-urgente.selected {
+            background-color: var(--color-primary);
+            color: white;
         }
 
+        /* Bouton de soumission */
         .submit-btn {
             width: 100%; 
             background-color: var(--color-primary); 
@@ -349,400 +329,523 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: var(--color-dark); 
             transform: translateY(-1px);
         }
+        .submit-btn span { margin-right: 10px; }
 
-        .success-message { 
-            background-color: #DCEDC8; 
-            color: #33691E; 
-            padding: 15px; 
-            border-radius: 6px; 
-            margin-bottom: 20px; 
-            border: 1px solid #8BC34A; 
-        }
-        .error-message { 
-            background-color: #FFCDD2; 
-            color: #B71C1C; 
-            padding: 15px; 
-            border-radius: 6px; 
-            margin-bottom: 20px; 
-            border: 1px solid #F44336; 
-        }
+        /* Messages */
+        .success-message { background-color: #DCEDC8; color: #33691E; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #8BC34A; }
+        .error-message { background-color: #FFCDD2; color: #B71C1C; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #F44336; }
 
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: var(--color-primary);
-            text-decoration: none;
-            font-weight: 500;
+        /* Compteur de caractères */
+        .char-counter {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .char-counter .count {
+            font-weight: bold;
+        }
+        .char-counter .insufficient {
+            color: #F44336;
+        }
+        .char-counter .sufficient {
+            color: #4CAF50;
         }
 
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) { 
-            .top-navbar {
-                display: none;
-            }
-
-            .main-navbar {
-                top: 0;
-            }
-
-            .main-container {
-                margin-top: 80px;
-            }
-
-            .form-container { 
-                padding: 25px; 
-            }
-            
-            .form-row { 
-                flex-direction: column; 
-                gap: 0; 
-            } 
-            
-            .priorite-group { 
-                flex-direction: column; 
-            } 
-            
-            .input-group-gps { 
-                flex-direction: column; 
-            } 
-            
-            .input-group-gps button { 
-                width: 100%; 
-                margin-top: 5px; 
-            }
-            
-            h2 {
-                font-size: 1.5rem;
-            }
+        @media (max-width: 600px) { 
+            .form-row { flex-direction: column; gap: 0; } 
+            .priorite-group { flex-direction: column; } 
+            .input-group-gps { flex-direction: column; } 
+            .input-group-gps button { width: 100%; margin-top: 5px; } 
+            .form-container { padding: 20px; }
         }
     </style>
 </head>
 <body>
-    <!-- BANDE NOIRE EN HAUT -->
-    <nav class="top-navbar">
-        <div class="top-nav-container">
-            <div class="top-nav-left">
-                <a href="mailto:info@company.com">
-                    <i class="fa fa-envelope"></i>info@company.com
-                </a>
-                <a href="tel:010-020-0340">
-                    <i class="fa fa-phone"></i>010-020-0340
-                </a>
+<div class="form-container">
+    <h2><span>&#x270E;</span> Modifier la Réclamation #<?php echo $id_reclamation; ?></h2>
+    
+    <?php echo $message_soumission; ?>
+
+    <form method="POST" id="reclamationForm"> 
+        
+        <div class="form-section-title"><span>&#x1F464;</span> Informations Personnelles</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="nom" class="required">Nom</label>
+                <input type="text" id="nom" name="nom" value="<?php echo $nom; ?>" 
+                       required 
+                       pattern="[a-zA-ZÀ-ÿ\s\-]{2,}"
+                       title="Seules les lettres sont autorisées (minimum 2 caractères)"
+                       oninput="validateField(this, 'nom')">
+                <div id="nom-error" class="validation-error"></div>
             </div>
-            <div class="top-nav-right">
-                <a href="https://fb.com/templatemo" target="_blank">
-                    <i class="fab fa-facebook-f"></i>
-                </a>
-                <a href="https://www.instagram.com/" target="_blank">
-                    <i class="fab fa-instagram"></i>
-                </a>
-                <a href="https://twitter.com/" target="_blank">
-                    <i class="fab fa-twitter"></i>
-                </a>
-                <a href="https://www.linkedin.com/" target="_blank">
-                    <i class="fab fa-linkedin"></i>
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- NAVBAR PRINCIPALE -->
-    <nav class="main-navbar">
-        <div class="nav-container">
-            <a href="index.html" class="logo">SOLIDA</a>
-        </div>
-    </nav>
-
-    <div class="main-container">
-        <div class="form-container">
-            <h2>Modifier la Réclamation #<?php echo $id; ?></h2>
-            
-            <?php 
-            if (!empty($message_soumission)) {
-                echo $message_soumission;
-            }
-            ?>
-
-            <form method="POST">
-                <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
-                <input type="hidden" name="statut" value="<?php echo htmlspecialchars($statut_actuel); ?>">
-                <input type="hidden" name="date" value="<?php echo htmlspecialchars($date_actuelle); ?>">
-
-                <h3>Informations Personnelles</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="nom" class="required">Nom</label>
-                        <input type="text" id="nom" name="nom" value="<?php echo htmlspecialchars($nom); ?>" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="prenom" class="required">Prénom</label>
-                        <input type="text" id="prenom" name="prenom" value="<?php echo htmlspecialchars($prenom); ?>" required>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="telephone" class="required">Téléphone</label>
-                        <div class="input-group-tel">
-                            <span class="prefix">+216</span>
-                            <input type="text" id="telephone" name="telephone" value="<?php echo htmlspecialchars($telephone); ?>" required pattern="[0-9]{8}" title="Doit contenir 8 chiffres">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="required">Email</label>
-                        <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
-                    </div>
-                </div>
-
-                <h3>Localisation</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="gouvernorat" class="required">Gouvernorat</label>
-                        <select id="gouvernorat" name="gouvernorat" required>
-                            <option value="">-- Choisir un gouvernorat --</option>
-                            <?php foreach (array_keys($data) as $gouvernorat): ?>
-                                <option value="<?php echo htmlspecialchars($gouvernorat); ?>" <?php echo ($gouvernorat == $gouvernorat_selectionne) ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars($gouvernorat); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="delegation" class="required">Délégation</label>
-                        <select id="delegation" name="delegation" required>
-                            <option value="">-- Choisir d'abord le gouvernorat --</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="ville">Ville</label>
-                        <input type="text" id="ville" name="ville" value="<?php echo htmlspecialchars($ville); ?>" placeholder="Ex: El Battan">
-                    </div>
-                    <div class="form-group">
-                        <label for="position_gps" class="required">Position GPS</label>
-                        <div class="input-group-gps">
-                            <input type="text" id="position_gps" name="position_gps" required
-                                value="<?php echo htmlspecialchars($position_gps); ?>" placeholder="Latitude, Longitude ou Adresse">
-                            <button type="button" onclick="getLocalisation()">
-                                &#x1F4CD; Localiser 
-                            </button>
-                        </div>
-                        <small>Cliquez sur "Localiser" pour détecter automatiquement votre position</small>
-                    </div>
-                </div>
-
-                <h3>Détails de la Réclamation</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="categorie" class="required">Catégorie</label>
-                        <select id="categorie" name="categorie" required>
-                            <option value="">-- Choisir une catégorie --</option>
-                            <option value="Route" <?php echo ($categorie_selectionnee == 'Route') ? 'selected' : ''; ?>>Route</option>
-                            <option value="Eclairage" <?php echo ($categorie_selectionnee == 'Eclairage') ? 'selected' : ''; ?>>Éclairage Public</option>
-                            <option value="Proprete" <?php echo ($categorie_selectionnee == 'Proprete') ? 'selected' : ''; ?>>Propreté</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="priorite" class="required">Priorité</label>
-                        <div class="priorite-group" id="priorite-group">
-                            <div class="priorite-btn priorite-faible <?php echo ($priorite_selectionnee == 'Faible') ? 'selected' : ''; ?>" data-value="Faible">
-                                &#x2193; Faible
-                            </div>
-                            <div class="priorite-btn priorite-normale <?php echo ($priorite_selectionnee == 'Normale') ? 'selected' : ''; ?>" data-value="Normale">
-                                &#x2192; Normale
-                            </div>
-                            <div class="priorite-btn priorite-urgente <?php echo ($priorite_selectionnee == 'Urgente') ? 'selected' : ''; ?>" data-value="Urgente">
-                                &#x2191; Urgente
-                            </div>
-                        </div>
-                        <input type="hidden" id="priorite_input" name="priorite" value="<?php echo htmlspecialchars($priorite_selectionnee); ?>">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="description_detaillee" class="required">Description Détaillée</label>
-                    <textarea id="description_detaillee" name="description_detaillee" rows="6" required><?php echo htmlspecialchars($description); ?></textarea>
-                </div>
-
-                <button type="submit" class="submit-btn">
-                    <span>&#x2705;</span> Mettre à jour la Réclamation
-                </button>
-                
-                <a href="ListeReclamation.php" class="back-link">← Retour à la liste des Réclamations</a>
-            </form>
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="bg-dark" id="tempaltemo_footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 text-success border-bottom pb-3 border-light logo">SOLIDA</h2>
-                    <ul class="list-unstyled text-light footer-link-list">
-                        <li>
-                            <i class="fas fa-map-marker-alt fa-fw"></i>
-                            1, 2 rue André Ampère - 2083 - Pôle Technologique - El Ghazala
-                        </li>
-                        <li>
-                            <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:010-020-0340">010-020-0340</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:info@company.com">info@company.com</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 text-light border-bottom pb-3 border-light">Further Info</h2>
-                    <ul class="list-unstyled text-light footer-link-list">
-                        <li><a class="text-decoration-none" href="#">Home</a></li>
-                        <li><a class="text-decoration-none" href="#">Événement</a></li>
-                        <li><a class="text-decoration-none" href="#">Dons</a></li>
-                        <li><a class="text-decoration-none" href="#">Reclamation</a></li>
-                        <li><a class="text-decoration-none" href="#">Contact</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="row text-light mb-4">
-                <div class="col-12 mb-3">
-                    <div class="w-100 my-3 border-top border-light"></div>
-                </div>
-                <div class="col-auto me-auto">
-                    <ul class="list-inline text-left footer-icons">
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="http://facebook.com/"><i class="fab fa-facebook-f fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.instagram.com/"><i class="fab fa-instagram fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://twitter.com/"><i class="fab fa-twitter fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.linkedin.com/"><i class="fab fa-linkedin fa-lg fa-fw"></i></a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-auto">
-                    <label class="sr-only" for="subscribeEmail">Email address</label>
-                    <div class="input-group mb-2">
-                        <input type="text" class="form-control bg-dark border-light" id="subscribeEmail" placeholder="Email address">
-                        <div class="input-group-text btn-success text-light">Subscribe</div>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="prenom" class="required">Prénom</label>
+                <input type="text" id="prenom" name="prenom" value="<?php echo $prenom; ?>" 
+                       required 
+                       pattern="[a-zA-ZÀ-ÿ\s\-]{2,}"
+                       title="Seules les lettres sont autorisées (minimum 2 caractères)"
+                       oninput="validateField(this, 'prenom')">
+                <div id="prenom-error" class="validation-error"></div>
             </div>
         </div>
-
-        <div class="w-100 bg-black py-3">
-            <div class="container">
-                <div class="row pt-2">
-                    <div class="col-12">
-                        <p class="text-left text-light">
-                            Copyright &copy; 2025 SOLIDA 
-                        </p>
-                    </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="telephone" class="required">Téléphone</label>
+                <div class="input-group-tel">
+                    <span class="prefix">+216</span>
+                    <input type="text" id="telephone" name="telephone" 
+                           value="<?php echo $telephone; ?>" 
+                           required 
+                           pattern="[0-9]{8}"
+                           title="Doit contenir exactement 8 chiffres"
+                           maxlength="8"
+                           oninput="validateField(this, 'telephone')">
                 </div>
+                <div id="telephone-error" class="validation-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="email" class="required">Email</label>
+                <input type="email" id="email" name="email" 
+                       value="<?php echo $email; ?>" 
+                       required 
+                       pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
+                       title="Doit être une adresse Gmail valide (ex: exemple@gmail.com)"
+                       oninput="validateField(this, 'email')">
+                <div id="email-error" class="validation-error"></div>
             </div>
         </div>
-    </footer>
-
-    <script>
-        const data = <?php echo json_encode($data); ?>;
-        const gouvernoratSelect = document.getElementById('gouvernorat');
-        const delegationSelect = document.getElementById('delegation');
-        const initialDelegationValue = "<?php echo htmlspecialchars($delegation_selectionnee); ?>";
-        const prioriteBtns = document.querySelectorAll('.priorite-btn');
-        const prioriteInput = document.getElementById('priorite_input');
-
-        // Gestion des délégations
-        function updateDelegations(gouvernorat, selectedDelegation = '') {
-            delegationSelect.innerHTML = '<option value="">-- Choisir une délégation --</option>';
-            if (data[gouvernorat]) {
-                data[gouvernorat].forEach(delegation => {
-                    const option = document.createElement('option');
-                    option.value = delegation;
-                    option.textContent = delegation;
-                    if (delegation === selectedDelegation) {
-                        option.selected = true;
+        
+        <div class="form-section-title"><span>&#x1F4CD;</span> Localisation</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="gouvernorat" class="required">Gouvernorat</label>
+                <select id="gouvernorat" name="gouvernorat" required onchange="validateField(this, 'gouvernorat'); updateDelegations(this.value);">
+                    <option value="">-- Choisir un gouvernorat --</option>
+                    <?php
+                    foreach (array_keys($data) as $gouvernorat) {
+                        $selected = ($gouvernorat == $gouvernorat_selectionne) ? 'selected' : '';
+                        echo "<option value='{$gouvernorat}' {$selected}>{$gouvernorat}</option>";
                     }
-                    delegationSelect.appendChild(option);
-                });
-            }
+                    ?>
+                </select>
+                <div id="gouvernorat-error" class="validation-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="delegation" class="required">Délégation</label>
+                <select id="delegation" name="delegation" required onchange="validateField(this, 'delegation')">
+                    <option value="">-- Choisir d'abord le gouvernorat --</option>
+                    <?php
+                    if (isset($data[$gouvernorat_selectionne])) {
+                        foreach ($data[$gouvernorat_selectionne] as $delegation) {
+                            $selected = ($delegation == $delegation_selectionnee) ? 'selected' : '';
+                            echo "<option value='{$delegation}' {$selected}>{$delegation}</option>";
+                        }
+                    }
+                    ?>
+                </select>
+                <div id="delegation-error" class="validation-error"></div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="ville">Ville</label>
+                <input type="text" id="ville" name="ville" value="<?php echo $ville; ?>" placeholder="Ex: El Battan">
+            </div>
+            <div class="form-group">
+                <label for="position_gps" class="required">Position GPS</label>
+                <div class="input-group-gps">
+                    <input type="text" id="position_gps" name="position_gps" required
+                        value="<?php echo $position_gps; ?>" placeholder="Latitude, Longitude ou Adresse"
+                        oninput="validateField(this, 'position_gps')">
+                    <button type="button" onclick="getLocalisation()">
+                        &#x1F4CD; Localiser 
+                    </button>
+                </div>
+                <div id="position_gps-error" class="validation-error"></div>
+                <small>Cliquez sur "Localiser" pour détecter automatiquement votre position</small>
+            </div>
+        </div>
+        
+        <div class="form-section-title"><span>&#x1F4DD;</span> Détails de la Réclamation</div>
+        <div class="form-group">
+            <label for="priorite">Priorité *</label>
+            <div class="priorite-group" id="priorite-group">
+                <div class="priorite-btn priorite-faible <?php echo ($priorite_selectionnee == 'Faible') ? 'selected' : ''; ?>" data-value="Faible">
+                    &#x2193; Faible
+                </div>
+                <div class="priorite-btn priorite-normale <?php echo ($priorite_selectionnee == 'Normale') ? 'selected' : ''; ?>" data-value="Normale">
+                    &#x2193; Normale
+                </div>
+                <div class="priorite-btn priorite-urgente <?php echo ($priorite_selectionnee == 'Urgente') ? 'selected' : ''; ?>" data-value="Urgente">
+                    &#x2191; Urgente
+                </div>
+                <input type="hidden" id="priorite_input" name="priorite" value="<?php echo $priorite_selectionnee; ?>">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="description_detaillee" class="required">Description détaillée</label>
+            <textarea id="description_detaillee" name="description_detaillee" 
+                      rows="6" 
+                      placeholder="Décrivez votre réclamation en détail..." 
+                      minlength="10" 
+                      required
+                      oninput="validateDescription(this)"><?php echo $description; ?></textarea>
+            <div id="description_detaillee-error" class="validation-error"></div>
+            <div class="char-counter">
+                <span>Minimum 10 caractères</span>
+                <span class="count <?php echo (strlen($description) >= 10 ? 'sufficient' : 'insufficient'); ?>" id="desc-count"><?php echo strlen($description); ?></span>
+            </div>
+        </div>
+        
+        <button type="submit" class="submit-btn">
+            <span>&#x27A1;</span> Mettre à jour la réclamation
+        </button>
+    </form>
+</div>
+
+<script>
+    // --- Variables globales ---
+    const dataJs = <?php echo json_encode($data); ?>;
+    const delegationSelect = document.getElementById('delegation');
+    const gouvernoratSelect = document.getElementById('gouvernorat');
+    const initialDelegationValue = "<?php echo $delegation_selectionnee; ?>";
+    
+    // --- Initialisation au chargement ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialiser les délégations
+        const selectedGouvernorat = gouvernoratSelect.value;
+        if (selectedGouvernorat) {
+            updateDelegations(selectedGouvernorat, initialDelegationValue);
         }
-
-        gouvernoratSelect.addEventListener('change', function() {
-            updateDelegations(this.value);
-        });
-
-        // Initialisation au chargement de la page
-        document.addEventListener('DOMContentLoaded', () => {
-            const selectedGouvernorat = gouvernoratSelect.value;
-            if (selectedGouvernorat) {
-                updateDelegations(selectedGouvernorat, initialDelegationValue);
-            }
-        });
-
-        // Gestion des priorités
-        prioriteBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                prioriteBtns.forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                prioriteInput.value = this.getAttribute('data-value');
+        
+        // Valider tous les champs au chargement (pour afficher les erreurs initiales)
+        validateAllFields();
+    });
+    
+    // --- Fonctions pour les dépendances Gouvernorat/Délégation ---
+    function updateDelegations(gouvernorat, initialValue = null) {
+        delegationSelect.innerHTML = '<option value="">-- Choisir une délégation --</option>';
+        if (gouvernorat && dataJs[gouvernorat]) {
+            dataJs[gouvernorat].forEach(delegation => {
+                const option = document.createElement('option');
+                option.value = delegation;
+                option.textContent = delegation;
+                if (delegation === initialValue) {
+                    option.selected = true;
+                }
+                delegationSelect.appendChild(option);
             });
+        }
+    }
+    
+    // --- Système de priorité ---
+    const prioriteBtns = document.querySelectorAll('.priorite-btn');
+    const prioriteInput = document.getElementById('priorite_input');
+    
+    prioriteBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            prioriteBtns.forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            prioriteInput.value = this.getAttribute('data-value');
         });
-
-        // Géolocalisation
-        function getLocalisation() {
-            const gpsInput = document.getElementById('position_gps');
-            const villeInput = document.getElementById('ville');
-
-            gpsInput.value = 'Localisation en cours...';
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        const apiUrl = `https://api.allorigins.win/get?url=` +
-                            encodeURIComponent(
-                                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
-                            );
-
-                        fetch(apiUrl)
-                            .then(response => response.json())
-                            .then(result => {
-                                const data = JSON.parse(result.contents);
-                                if (data.display_name) {
-                                    gpsInput.value = data.display_name;
-                                    const ville = data.address.city || data.address.town || data.address.village || "";
-                                    villeInput.value = ville;
-                                } else {
-                                    gpsInput.value = `${lat}, ${lon} (Adresse non trouvée)`;
-                                }
-                            })
-                            .catch(err => {
-                                console.error("Erreur API :", err);
-                                gpsInput.value = `${lat}, ${lon} (Erreur API)`;
-                            });
-                    },
-                    () => {
-                        gpsInput.value = "Erreur : Permission refusée";
-                        alert("Autorisez la géolocalisation !");
-                    }
-                );
-            } else {
-                gpsInput.value = "Géolocalisation non supportée";
+    });
+    
+    // --- Validation générique pour tous les champs ---
+    function validateField(input, fieldName) {
+        const errorElement = document.getElementById(`${fieldName}-error`);
+        const value = input.value.trim();
+        
+        // Réinitialiser le message d'erreur
+        errorElement.textContent = '';
+        input.classList.remove('input-error');
+        
+        // Validation selon le type de champ
+        let isValid = true;
+        let errorMessage = '';
+        
+        switch(fieldName) {
+            case 'nom':
+            case 'prenom':
+                if (value === '') {
+                    errorMessage = 'Ce champ est obligatoire';
+                    isValid = false;
+                } else if (!/^[a-zA-ZÀ-ÿ\s\-]{2,}$/u.test(value)) {
+                    errorMessage = 'Doit contenir uniquement des lettres (minimum 2 caractères)';
+                    isValid = false;
+                }
+                break;
+                
+            case 'telephone':
+                // N'autoriser que les chiffres
+                let phoneValue = value.replace(/\D/g, '');
+                if (phoneValue.length > 8) {
+                    phoneValue = phoneValue.slice(0, 8);
+                }
+                input.value = phoneValue;
+                
+                if (phoneValue === '') {
+                    errorMessage = 'Ce champ est obligatoire';
+                    isValid = false;
+                } else if (!/^[0-9]{8}$/.test(phoneValue)) {
+                    errorMessage = 'Le téléphone doit contenir exactement 8 chiffres';
+                    isValid = false;
+                }
+                break;
+                
+            case 'email':
+                if (value === '') {
+                    errorMessage = 'Ce champ est obligatoire';
+                    isValid = false;
+                } else if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(value)) {
+                    errorMessage = 'L\'email doit se terminer par @gmail.com';
+                    isValid = false;
+                }
+                break;
+                
+            case 'gouvernorat':
+            case 'delegation':
+            case 'position_gps':
+                if (value === '') {
+                    errorMessage = 'Ce champ est obligatoire';
+                    isValid = false;
+                }
+                break;
+        }
+        
+        // Afficher l'erreur si nécessaire
+        if (!isValid) {
+            errorElement.textContent = errorMessage;
+            input.classList.add('input-error');
+        }
+        
+        return isValid;
+    }
+    
+    // --- Validation spécifique pour la description ---
+    function validateDescription(textarea) {
+        const errorElement = document.getElementById('description_detaillee-error');
+        const countElement = document.getElementById('desc-count');
+        const value = textarea.value;
+        
+        // Mettre à jour le compteur
+        const length = value.length;
+        countElement.textContent = length;
+        
+        // Changer la couleur selon le nombre de caractères
+        if (length < 10) {
+            countElement.className = 'count insufficient';
+        } else {
+            countElement.className = 'count sufficient';
+        }
+        
+        // Réinitialiser le message d'erreur
+        errorElement.textContent = '';
+        textarea.classList.remove('input-error');
+        
+        // Validation
+        if (value === '') {
+            errorElement.textContent = 'Ce champ est obligatoire';
+            textarea.classList.add('input-error');
+            return false;
+        } else if (length < 10) {
+            errorElement.textContent = 'La description doit contenir au moins 10 caractères';
+            textarea.classList.add('input-error');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // --- Valider tous les champs (pour l'initialisation) ---
+    function validateAllFields() {
+        const fields = [
+            { id: 'nom', name: 'nom' },
+            { id: 'prenom', name: 'prenom' },
+            { id: 'telephone', name: 'telephone' },
+            { id: 'email', name: 'email' },
+            { id: 'gouvernorat', name: 'gouvernorat' },
+            { id: 'delegation', name: 'delegation' },
+            { id: 'position_gps', name: 'position_gps' }
+        ];
+        
+        fields.forEach(field => {
+            const input = document.getElementById(field.id);
+            if (input) {
+                validateField(input, field.name);
+            }
+        });
+        
+        // Valider la description
+        const descriptionTextarea = document.getElementById('description_detaillee');
+        if (descriptionTextarea) {
+            validateDescription(descriptionTextarea);
+        }
+    }
+    
+    // --- Validation complète au submit ---
+    document.getElementById('reclamationForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        const errorFields = [];
+        
+        // Valider tous les champs
+        const fieldsToValidate = [
+            { id: 'nom', name: 'nom' },
+            { id: 'prenom', name: 'prenom' },
+            { id: 'telephone', name: 'telephone' },
+            { id: 'email', name: 'email' },
+            { id: 'gouvernorat', name: 'gouvernorat' },
+            { id: 'delegation', name: 'delegation' },
+            { id: 'position_gps', name: 'position_gps' }
+        ];
+        
+        fieldsToValidate.forEach(field => {
+            const input = document.getElementById(field.id);
+            if (input && !validateField(input, field.name)) {
+                isValid = false;
+                errorFields.push(field.name);
+            }
+        });
+        
+        // Valider la description
+        const descriptionTextarea = document.getElementById('description_detaillee');
+        if (descriptionTextarea && !validateDescription(descriptionTextarea)) {
+            isValid = false;
+            errorFields.push('description_detaillee');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            
+            // Supprimer les anciens messages d'erreur généraux
+            const oldMessages = document.querySelectorAll('.error-message');
+            oldMessages.forEach(msg => {
+                if (msg.innerHTML.includes('Veuillez corriger')) {
+                    msg.remove();
+                }
+            });
+            
+            // Afficher un nouveau message d'erreur général
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'error-message';
+            messageDiv.innerHTML = '❌ Veuillez corriger les erreurs dans le formulaire avant de soumettre.';
+            
+            // Insérer le message après le h2
+            const h2 = document.querySelector('h2');
+            h2.parentNode.insertBefore(messageDiv, h2.nextSibling);
+            
+            // Faire défiler vers la première erreur
+            if (errorFields.length > 0) {
+                const firstErrorField = errorFields[0];
+                const firstErrorInput = document.querySelector(`[name="${firstErrorField}"]`);
+                if (firstErrorInput) {
+                    firstErrorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstErrorInput.focus();
+                }
             }
         }
-    </script>
+    });
+    
+    // --- Validation automatique à la perte de focus ---
+    const fieldsToValidateOnBlur = ['nom', 'prenom', 'telephone', 'email', 'position_gps'];
+    fieldsToValidateOnBlur.forEach(fieldName => {
+        const input = document.getElementById(fieldName);
+        if (input) {
+            input.addEventListener('blur', function() {
+                validateField(this, fieldName);
+            });
+        }
+    });
+    
+    // Validation pour les select
+    document.getElementById('gouvernorat').addEventListener('blur', function() {
+        validateField(this, 'gouvernorat');
+    });
+    
+    document.getElementById('delegation').addEventListener('blur', function() {
+        validateField(this, 'delegation');
+    });
+    
+    document.getElementById('description_detaillee').addEventListener('blur', function() {
+        validateDescription(this);
+    });
+    
+    // --- Fonction de géolocalisation ---
+    function getLocalisation() {
+        const gpsInput = document.getElementById('position_gps');
+        const villeInput = document.getElementById('ville');
+        gpsInput.value = 'Localisation en cours...';
+        
+        // Effacer l'erreur
+        const errorElement = document.getElementById('position_gps-error');
+        if (errorElement) {
+            errorElement.textContent = '';
+        }
+        gpsInput.classList.remove('input-error');
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    // Utilisation du proxy pour le géocodage inverse
+                    const apiUrl =
+                        `https://api.allorigins.win/get?url=` +
+                        encodeURIComponent(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`
+                        );
+                    fetch(apiUrl)
+                        .then(response => response.json())
+                        .then(result => {
+                            const data = JSON.parse(result.contents);
+                            if (data.display_name) {
+                                // Afficher l'adresse complète dans le champ GPS
+                                gpsInput.value = data.display_name;
+                                // Tenter de remplir le champ Ville
+                                const ville =
+                                    data.address.city ||
+                                    data.address.town ||
+                                    data.address.village ||
+                                    "";
+                                villeInput.value = ville;
+                            } else {
+                                // Si l'adresse n'est pas trouvée, afficher les coordonnées
+                                gpsInput.value = `${lat}, ${lon} (Adresse non trouvée)`;
+                            }
+                            // Valider le champ après remplissage
+                            validateField(gpsInput, 'position_gps');
+                        })
+                        .catch(err => {
+                            console.error("Erreur API :", err);
+                            // En cas d'échec de l'API, afficher au moins les coordonnées
+                            gpsInput.value = `${lat}, ${lon} (Erreur API)`;
+                            validateField(gpsInput, 'position_gps');
+                        });
+                },
+                () => {
+                    gpsInput.value = "Erreur : Permission refusée";
+                    gpsInput.classList.add('input-error');
+                    const errorElement = document.getElementById('position_gps-error');
+                    if (errorElement) {
+                        errorElement.textContent = 'Autorisez la géolocalisation ou entrez manuellement la position';
+                    }
+                    alert("Autorisez la géolocalisation !");
+                }
+            );
+        } else {
+            gpsInput.value = "Géolocalisation non supportée";
+            gpsInput.classList.add('input-error');
+            const errorElement = document.getElementById('position_gps-error');
+            if (errorElement) {
+                errorElement.textContent = 'Votre navigateur ne supporte pas la géolocalisation';
+            }
+        }
+    }
+</script>
 </body>
 </html>
