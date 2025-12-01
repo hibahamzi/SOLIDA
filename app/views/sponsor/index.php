@@ -1,225 +1,207 @@
+<?php
+// Ici ton contrôleur doit déjà passer $sponsors (array d’objets Sponsor)
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Backoffice - Gestion des sponsors</title>
+    <title>SOLIDA Admin - Gestion des sponsors</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS BOOTSTRAP + TEMPLATE BACKOFFICE (même que deals) -->
-    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/templatemo.css">
-    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/custom.css">
-    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/css/fontawesome.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+    <!-- Google Fonts -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;200;300;400;500;700;900&display=swap">
 
-        .sidebar {
-            height: 100vh;
-            background-color: #343a40;
-            color: #fff;
-        }
-
-        .sidebar a {
-            color: #adb5bd;
-            text-decoration: none;
-            display: block;
-            padding: 10px 15px;
-        }
-
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: #495057;
-            color: #fff;
-        }
-
-        .content-wrapper {
-            padding: 20px;
-        }
-
-        .page-title {
-            margin-bottom: 20px;
-        }
-
-        .badge {
-            font-size: 0.8rem;
-        }
-
-        .table thead th {
-            white-space: nowrap;
-        }
-    </style>
+    <!-- Template admin -->
+    <link rel="stylesheet" href="/PROJET_WEB_MVC_FINAL/public/backoffice/assets/css/admin.css">
 </head>
 <body>
 
-<div class="container-fluid">
-    <div class="row">
-
-        <!-- SIDEBAR BACKOFFICE -->
-        <nav class="col-md-2 d-none d-md-block sidebar">
-            <div class="py-4 px-3">
-                <h4 class="text-white">SOLIDA Admin</h4>
-                <p class="mb-0 text-muted">Backoffice</p>
-            </div>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php" class="nav-link">
-                        <i class="fa fa-home me-2"></i> Dashboard général
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=index"
-                       class="nav-link active">
-                        <i class="fa fa-handshake-o me-2"></i> Gestion des sponsors
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=deal&action=index"
-                       class="nav-link">
-                        <i class="fa fa-tags me-2"></i> Gestion des deals
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-        <!-- CONTENU PRINCIPAL -->
-        <main class="col-md-10 ms-sm-auto col-lg-10 content-wrapper">
-
-            <!-- Bandeau top -->
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-3 border-bottom pb-2">
-                <h1 class="h3 page-title">Gestion des sponsors</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <a class="btn btn-success"
-                       href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=create">
-                        <i class="fa fa-plus me-1"></i> Ajouter un sponsor
-                    </a>
-                </div>
-            </div>
-
-            <!-- Indicateurs (optionnels) -->
-            <div class="row mb-4">
-                <?php
-                $total = count($sponsors);
-                $actifs = 0;
-                $inactifs = 0;
-
-                foreach ($sponsors as $sp) {
-                    if (strtolower($sp->getStatut()) === 'actif') {
-                        $actifs++;
-                    } elseif (strtolower($sp->getStatut()) === 'inactif') {
-                        $inactifs++;
-                    }
-                }
-                ?>
-                <div class="col-md-4 mb-2">
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title text-muted">Total sponsors</h6>
-                            <h3><?= $total ?></h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title text-muted">Actifs</h6>
-                            <h3><?= $actifs ?></h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-2">
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title text-muted">Inactifs</h6>
-                            <h3><?= $inactifs ?></h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TABLEAU DES SPONSORS -->
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Liste des sponsors</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 align-middle">
-                            <thead class="table-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>Nom entreprise</th>
-                                <th>Email</th>
-                                <th>Téléphone</th>
-                                <th>Type sponsoring</th>
-                                <th>Montant engagé</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <?php if (empty($sponsors)): ?>
-                                <tr>
-                                    <td colspan="8" class="text-center py-4">
-                                        Aucun sponsor enregistré pour le moment.
-                                    </td>
-                                </tr>
-                            <?php else: ?>
-                                <?php foreach ($sponsors as $sp): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($sp->getId()) ?></td>
-                                        <td><?= htmlspecialchars($sp->getNomEntreprise()) ?></td>
-                                        <td><?= htmlspecialchars($sp->getEmailContact()) ?></td>
-                                        <td><?= htmlspecialchars($sp->getTelephone()) ?></td>
-                                        <td><?= htmlspecialchars($sp->getTypeSponsoring()) ?></td>
-                                        <td>
-                                            <?php if ($sp->getMontantEngage() !== null): ?>
-                                                <?= htmlspecialchars($sp->getMontantEngage()) ?> €
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <?php
-                                            $statut = strtolower($sp->getStatut());
-                                            if ($statut === 'actif'): ?>
-                                                <span class="badge bg-success">Actif</span>
-                                            <?php elseif ($statut === 'inactif'): ?>
-                                                <span class="badge bg-secondary">Inactif</span>
-                                            <?php else: ?>
-                                                <span class="badge bg-info">
-                                                    <?= htmlspecialchars($sp->getStatut()) ?>
-                                                </span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td>
-                                            <a class="btn btn-primary btn-sm mb-1"
-                                               href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=edit&id=<?= $sp->getId() ?>">
-                                                <i class="fa fa-pencil"></i>
-                                            </a>
-
-                                            <a class="btn btn-danger btn-sm mb-1"
-                                               href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=delete&id=<?= $sp->getId() ?>"
-                                               onclick="return confirm('Supprimer ce sponsor ?');">
-                                                <i class="fa fa-trash"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h2>SOLIDA</h2>
+        <p>Panneau d'Administration</p>
     </div>
+
+    <!-- Bloc admin (simplifié) -->
+    <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #59ab6e, #69bb7e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">
+                AD
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <div style="color: white; font-weight: 600; font-size: 14px;">Administrateur</div>
+                <div style="color: rgba(255,255,255,0.7); font-size: 12px;">admin@solida.com</div>
+            </div>
+        </div>
+    </div>
+
+    <ul class="sidebar-menu">
+        <li>
+            <a href="/PROJET_WEB_MVC_FINAL/public/backoffice/dashboard.php">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Tableau de Bord</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="active">
+                <i class="fas fa-handshake"></i>
+                <span>Sponsors</span>
+            </a>
+        </li>
+        <li>
+            <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=deal&action=index">
+                <i class="fas fa-tags"></i>
+                <span>Deals</span>
+            </a>
+        </li>
+        <!-- autres menus si besoin -->
+    </ul>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h1>Gestion des sponsors</h1>
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="user-details">
+                <span>Administrateur</span>
+                <small>admin@solida.com</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+
+        <?php
+        $sponsors = $sponsors ?? [];
+        $total = count($sponsors);
+        $actifs = 0;
+        $inactifs = 0;
+        foreach ($sponsors as $sp) {
+            $st = strtolower((string)$sp->getStatut());
+            if ($st === 'actif') $actifs++;
+            elseif ($st === 'inactif') $inactifs++;
+        }
+        ?>
+
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card users">
+                <div class="stat-header">
+                    <h3>Total sponsors</h3>
+                    <div class="stat-icon users-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                </div>
+                <div class="stat-number"><?= $total ?></div>
+                <div class="stat-label">Sponsors enregistrés</div>
+            </div>
+
+            <div class="stat-card events">
+                <div class="stat-header">
+                    <h3>Actifs</h3>
+                    <div class="stat-icon events-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-number"><?= $actifs ?></div>
+                <div class="stat-label">Sponsors actifs</div>
+            </div>
+
+            <div class="stat-card claims">
+                <div class="stat-header">
+                    <h3>Inactifs</h3>
+                    <div class="stat-icon claims-icon">
+                        <i class="fas fa-pause-circle"></i>
+                    </div>
+                </div>
+                <div class="stat-number"><?= $inactifs ?></div>
+                <div class="stat-label">Sponsors inactifs</div>
+            </div>
+        </div>
+
+        <!-- Tableau sponsors -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Liste des sponsors</h2>
+                <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=create"
+                   class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Ajouter
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <?php if (empty($sponsors)): ?>
+                    <p style="text-align:center; padding: 40px; color:#bcbcbc;">
+                        <i class="fas fa-inbox" style="font-size:48px; display:block; margin-bottom:15px;"></i>
+                        Aucun sponsor trouvé
+                    </p>
+                <?php else: ?>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom entreprise</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Type</th>
+                            <th>Montant (DT)</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($sponsors as $sp): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($sp->getId()) ?></td>
+                                <td><?= htmlspecialchars($sp->getNomEntreprise()) ?></td>
+                                <td><?= htmlspecialchars($sp->getEmailContact()) ?></td>
+                                <td><?= htmlspecialchars($sp->getTelephone()) ?></td>
+                                <td><?= htmlspecialchars($sp->getTypeSponsoring()) ?></td>
+                                <td><?= htmlspecialchars($sp->getMontantEngage() ?? '—') ?></td>
+                                <td>
+                                    <?php $st = strtolower((string)$sp->getStatut()); ?>
+                                    <?php if ($st === 'actif'): ?>
+                                        <span class="badge admin">Actif</span>
+                                    <?php elseif ($st === 'inactif'): ?>
+                                        <span class="badge user">Inactif</span>
+                                    <?php else: ?>
+                                        <span class="badge"><?= htmlspecialchars($sp->getStatut()) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=edit&id=<?= $sp->getId() ?>"
+                                       class="btn btn-small">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
+                                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=delete&id=<?= $sp->getId() ?>"
+                                       class="btn btn-small btn-danger"
+                                       onclick="return confirm('Supprimer ce sponsor ?');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+        </div>
+
+    </div>
+
 </div>
 
-<!-- JS -->
-<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/jquery-1.11.0.min.js"></script>
-<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/bootstrap.bundle.min.js"></script>
-<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/templatemo.js"></script>
-<script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/custom.js"></script>
 </body>
 </html>

@@ -9,12 +9,13 @@ class SponsorController
 
     public function __construct()
     {
+        // On récupère l'instance PDO globale
         global $pdo;
         $this->pdo = $pdo;
     }
 
     // =======================
-    // PAGE FRONT (PUBLIC) - LISTE DES SPONSORS + OFFRES
+    // PAGE FRONT (PUBLIC) - LISTE DES SPONSORS + OFFRES ACCEPTÉES
     // =======================
     public function front()
     {
@@ -22,6 +23,18 @@ class SponsorController
         $sql = "SELECT * FROM sponsors";
         $stmt = $this->pdo->query($sql);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // ==== DEBUG TEMPORAIRE (désactive en commentant) ====
+        /*
+        echo '<pre style="font-size:14px">';
+        echo "DEBUG SPONSOR FRONT()\n";
+        echo "Nombre de sponsors trouvés = " . count($rows) . "\n\n";
+        echo "Lignes sponsors :\n";
+        var_dump($rows);
+        echo "</pre>";
+        exit;
+        */
+        // ====================================================
 
         // On transforme chaque ligne en objet Sponsor
         $sponsors = [];
@@ -53,6 +66,18 @@ class SponsorController
         ";
         $stmtDeals = $this->pdo->query($sqlDeals);
         $offers = $stmtDeals->fetchAll(PDO::FETCH_ASSOC);
+
+        // ==== DEBUG DEALS (optionnel aussi) ====
+        /*
+        echo '<pre style="font-size:14px">';
+        echo "DEBUG DEALS FRONT()\n";
+        echo "Nombre de deals acceptés = " . count($offers) . "\n\n";
+        echo "Lignes deals :\n";
+        var_dump($offers);
+        echo "</pre>";
+        exit;
+        */
+        // =======================================
 
         // 3) On envoie sponsors + offres à la vue front
         require __DIR__ . '/../views/sponsor/front.php';
@@ -106,7 +131,6 @@ class SponsorController
             $old['typeSponsoring']      = trim($_POST['typeSponsoring'] ?? '');
             $old['montantEngage']       = trim($_POST['montantEngage'] ?? '');
             $old['domaineActivite']     = trim($_POST['domaineActivite'] ?? '');
-            // plus de $_POST['logoUrl'] ici : on gère un fichier logo
             $old['contratUrl']          = trim($_POST['contratUrl'] ?? '');
             $old['dateDebutPartenaire'] = trim($_POST['dateDebutPartenaire'] ?? '');
             $old['dateFinPartenaire']   = trim($_POST['dateFinPartenaire'] ?? '');
@@ -140,7 +164,7 @@ class SponsorController
                     if (!in_array($file['type'], $allowedTypes, true)) {
                         $fieldErrors['logo'] = "Le logo doit être une image (JPG, PNG ou GIF).";
                     } else {
-                        // Dossier de destination (tu peux ajuster)
+                        // Dossier de destination
                         $uploadDir = __DIR__ . '/../../public/uploads/logos';
                         if (!is_dir($uploadDir)) {
                             mkdir($uploadDir, 0777, true);
@@ -148,13 +172,12 @@ class SponsorController
 
                         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
                         $newName = 'logo_' . time() . '_' . mt_rand(1000, 9999) . '.' . $ext;
-
                         $dest = $uploadDir . '/' . $newName;
 
                         if (!move_uploaded_file($file['tmp_name'], $dest)) {
                             $fieldErrors['logo'] = "Erreur lors de l'upload du logo.";
                         } else {
-                            // Chemin relatif stocké en BDD (utilisé sur le front)
+                            // Chemin relatif stocké en BDD
                             $logoPath = '/PROJET_WEB_MVC_FINAL/public/uploads/logos/' . $newName;
                         }
                     }
@@ -172,7 +195,7 @@ class SponsorController
                     $old['typeSponsoring'],
                     $old['montantEngage'] ?: null,
                     $old['domaineActivite'] ?: null,
-                    $logoPath, // <--- chemin logo (ou null)
+                    $logoPath,
                     $old['contratUrl'] ?: null,
                     $old['dateDebutPartenaire'] ?: null,
                     $old['dateFinPartenaire'] ?: null,
@@ -194,7 +217,7 @@ class SponsorController
                     $sponsor->getTypeSponsoring(),
                     $sponsor->getMontantEngage(),
                     $sponsor->getDomaineActivite(),
-                    $sponsor->getLogoUrl(),          // <--- en BDD
+                    $sponsor->getLogoUrl(),
                     $sponsor->getContratUrl(),
                     $sponsor->getDateDebutPartenaire(),
                     $sponsor->getDateFinPartenaire(),
@@ -272,7 +295,6 @@ class SponsorController
             $old['typeSponsoring']      = trim($_POST['typeSponsoring'] ?? '');
             $old['montantEngage']       = trim($_POST['montantEngage'] ?? '');
             $old['domaineActivite']     = trim($_POST['domaineActivite'] ?? '');
-            // champ texte (url logo) si tu veux garder l’ancienne valeur
             $old['logoUrl']             = trim($_POST['logoUrl'] ?? $old['logoUrl']);
             $old['contratUrl']          = trim($_POST['contratUrl'] ?? '');
             $old['dateDebutPartenaire'] = trim($_POST['dateDebutPartenaire'] ?? '');
