@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Projet SOLIDA - Gestion des Participations aux Événements
 
 ## Description
@@ -103,3 +104,6 @@ Tous les formulaires utilisent uniquement la validation JavaScript (pas d'attrib
 
 Projet développé dans le cadre d'un projet académique.
 
+=======
+# SOLIDA-project-2A11
+>>>>>>> cc3f07685986b3110bc36f9a6bebb104cc20710a
