@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLIDA - Créer un Événement</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* Styles simples pour le formulaire */
+        body {
+            font-family: 'Verdana', sans-serif;
+            background-color: #f8f9fa;
+            color: #495057;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+            border-bottom: 2px solid #adb5bd;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #343a40;
+        }
+        .form-group input[type="text"], 
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group input[type="number"],
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .action-button-submit {
+            background-color: #28a745; /* Vert pour Soumettre */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .action-button-submit:hover {
+            background-color: #218838;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1><i class="fas fa-plus-circle"></i> Ajouter un nouvel Événement</h1>
+        
+        <form id="event-creation-form">
+            
+            <div class="form-group">
+                <label for="titre">Titre de l'événement :</label>
+                <input type="text" id="titre" name="titre" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description (objectifs sociaux, détails) :</label>
+                <textarea id="description" name="description" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="categorie">Catégorie :</label>
+                <select id="categorie" name="categorie" required>
+                    <option value="">-- Choisir une catégorie --</option>
+                    <option value="Académique">Académique</option>
+                    <option value="Sport">Sport</option>
+                    <option value="Culture">Culture</option>
+                    <option value="Social">Social / Rencontre</option>
+                    <option value="Éco-Responsable">Éco-Responsable / Bénévolat</option>
+                    </select>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <label for="date_evenement">Date :</label>
+                    <input type="date" id="date_evenement" name="date_evenement" required>
+                </div>
+                <div style="flex: 1;">
+                    <label for="heure_evenement">Heure de début :</label>
+                    <input type="time" id="heure_evenement" name="heure_evenement" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="lieu">Lieu / Adresse sur le campus :</label>
+                <input type="text" id="lieu" name="lieu" required>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <label for="capacite_max">Capacité maximale (Nombre de participants) :</label>
+                    <input type="number" id="capacite_max" name="capacite_max" min="1" required>
+                </div>
+                <div style="flex: 1;">
+                    <label for="organisateur">Organisateur (Votre nom/club) :</label>
+                    <input type="text" id="organisateur" name="organisateur" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="est_eco_responsable" name="est_eco_responsable">
+                    <i class="fas fa-leaf"></i> L'événement est-il éco-responsable ? (Nourriture locale, zéro déchet, etc.)
+                </label>
+            </div>
+
+            <button type="submit" class="action-button-submit">Enregistrer l'Événement</button>
+        </form>
+        
+        <a href="evenements.html" class="back-link"><i class="fas fa-arrow-left"></i> Retour à la liste des événements</a>
+
+    </div>
+
+    <script>
+        document.getElementById('event-creation-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Ici, vous ajouteriez la logique réelle pour envoyer les données à votre base de données.
+            
+            alert('Événement "' + document.getElementById('titre').value + '" enregistré avec succès (Simulation) !');
+            
+            // Redirection vers la liste après la soumission (en environnement réel)
+            // window.location.href = 'evenements.html';
+        });
+    </script>
+</body>
+</html>

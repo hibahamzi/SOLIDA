@@ -1,0 +1,28 @@
+<?php
+// Fichier: Model/Reclamation.php
+
+class Reclamation {
+    // Simplifié pour l'exemple MVC minimaliste
+    private $id;
+    private $nom;
+    private $email;
+    private $priorite; 
+    private $description;
+
+    public function __construct($nom, $priorite, $description, $email = 'default@example.com') {
+        $this->nom = $nom;
+        $this->priorite = $priorite;
+        $this->description = $description;
+        $this->email = $email; 
+    }
+
+    // Getters
+    public function getNom() { return $this->nom; }
+    public function getPriorite() { return $this->priorite; }
+    public function getEmail() { return $this->email; }
+    // ... (Ajoutez tous les autres getters comme dans l'exemple précédent)
+    
+    // Note: Pour une persistance réelle, vous ajouteriez ici des méthodes 
+    // qui interagissent avec la base de données via un Manager ou DAO.
+}
+?>

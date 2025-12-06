@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Déposer une Réclamation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            display: flex;
+            align-items: center;
+            color: #961096;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #6903769c;
+            padding-bottom: 10px;
+        }
+        .section-header {
+            color: #f23fb9;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #40b6f1;
+        }
+        input[type="text"], input[type="email"], select, textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .required::after {
+            content: " *";
+            color: red;
+        }
+        .tel-group {
+            display: flex;
+        }
+        .tel-prefix {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-right: none;
+            background-color: #eee;
+            border-radius: 4px 0 0 4px;
+        }
+        .tel-input {
+            flex-grow: 1;
+            border-radius: 0 4px 4px 0 !important;
+        }
+        .btn-localize {
+            background-color: #d443c8;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .priority-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .priority-group .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+        .btn-faible { background-color: #408f50; color: #333;}
+        .btn-normale { background-color: #f8ce4f; color: #333;}
+        .btn-urgente { background-color: #b65962;}
+        .btn-submit {
+            background-color: #65cff6;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1em;
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>&#9998;&nbsp;Déposer une Réclamation</h2>
+
+        <div class="section-header">&#9432; Informations Personnelles</div>
+        <form action="/submit-reclamation" method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nom" class="required">Nom</label>
+                    <input type="text" id="nom" name="nom" required placeholder="Votre Nom">
+                </div>
+                <div class="form-group">
+                    <label for="prenom" class="required">Prénom</label>
+                    <input type="text" id="prenom" name="prenom" required placeholder="Votre Prénom">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="telephone" class="required">Téléphone</label>
+                    <div class="tel-group">
+                        <span class="tel-prefix">+216</span>
+                        <input type="text" id="telephone" name="telephone" required class="tel-input" placeholder="XX XXX XXXX">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email" class="required">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="exemple@domaine.com">
+                </div>
+            </div>
+
+            <div class="section-header">&#9906; Localisation</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="gouvernorat" class="required">Gouvernorat</label>
+                    <select id="gouvernorat" name="gouvernorat" required>
+                        <option value="">-- Choisir le gouvernorat --</option>
+                        <option value="Tunis">Tunis</option>
+                        <option value="Ariana">Ariana</option>
+                        <option value="Sfax">Sfax</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="delegation" class="required">Délégation</label>
+                    <select id="delegation" name="delegation" required>
+                        <option value="">-- Choisir d'abord le gouvernorat --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="ville">Ville</label>
+                    <input type="text" id="ville" name="ville" placeholder="Entrez le nom de la ville">
+                </div>
+                <div class="form-group">
+                    <label for="position-gps" class="required">Position GPS</label>
+                    <div style="display: flex; align-items: center;">
+                        <input type="text" id="position-gps" name="position-gps" placeholder="Latitude, Longitude" required>
+                        <button type="button" class="btn-localize" id="btn-localiser">&#9906; Localiser</button>
+                    </div>
+                    <small style="margin-top: 5px; color: #888;">Cliquez sur "Localiser" pour détecter automatiquement votre position</small>
+                </div>
+            </div>
+
+            <div class="section-header">&#9776; Détails de la Réclamation</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required">Priorité</label>
+                    <div class="priority-group">
+                        <button type="button" class="btn btn-faible" data-value="Faible">&darr; Faible</button>
+                        <button type="button" class="btn btn-normale" data-value="Normale">&#8645; Normale</button>
+                        <button type="button" class="btn btn-urgente" data-value="Urgente">&uarr; Urgente</button>
+                    </div>
+                    <input type="hidden" name="priorite" id="priorite" value="Normale">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="width: 100%;">
+                    <label for="description" class="required">Description détaillée</label>
+                    <textarea id="description" name="description" required placeholder="Décrivez votre réclamation en détail..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">&#9992; Envoyer la réclamation</button>
+        </form>
+    </div>
+
+    <script>
+        // --- Données des délégations ---
+        const delegationsData = {
+            "Tunis": ["Tunis Ville", "Bab Souika", "Carthage"],
+            "Ariana": ["Ariana Ville", "Soukra"],
+            "Sfax": ["Sfax Ville", "Sfax Sud"]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const gouvernoratSelect = document.getElementById('gouvernorat');
+            const delegationSelect = document.getElementById('delegation');
+            const priorityButtons = document.querySelectorAll('.priority-group .btn');
+            const hiddenPriorityInput = document.getElementById('priorite');
+            const btnLocaliser = document.getElementById('btn-localiser');
+            const gpsField = document.getElementById('position-gps');
+
+            // 🔹 Met à jour la liste des délégations
+            gouvernoratSelect.addEventListener('change', function() {
+                const selected = this.value;
+                delegationSelect.innerHTML = '<option value="">-- Choisir la délégation --</option>';
+                if (delegationsData[selected]) {
+                    delegationsData[selected].forEach(d => {
+                        const option = document.createElement('option');
+                        option.value = d;
+                        option.textContent = d;
+                        delegationSelect.appendChild(option);
+                    });
+                }
+            });
+
+            // 🔹 Gestion de la priorité
+            priorityButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    priorityButtons.forEach(b => b.style.border = 'none');
+                    this.style.border = '2px solid #333';
+                    hiddenPriorityInput.value = this.dataset.value;
+                });
+            });
+
+            // 🔹 Localisation automatique
+            btnLocaliser.addEventListener('click', () => {
+                if (navigator.geolocation) {
+                    btnLocaliser.textContent = "Localisation en cours...";
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude.toFixed(6);
+                            const lon = position.coords.longitude.toFixed(6);
+                            gpsField.value = `${lat}, ${lon}`;
+                            btnLocaliser.textContent = "Localiser";
+                            alert("Position détectée avec succès !");
+                        },
+                        (error) => {
+                            btnLocaliser.textContent = "Localiser";
+                            alert("Impossible d’obtenir la position. Vérifiez vos permissions GPS.");
+                        }
+                    );
+                } else {
+                    alert("La géolocalisation n’est pas supportée par votre navigateur.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

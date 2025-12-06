@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLIDA - Tous les Événements</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* --- Styles CSS Simples et Lisibles --- */
+        body {
+            font-family: 'Verdana', sans-serif;
+            background-color: #f8f9fa;
+            color: #495057;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #343a40;
+            font-size: 2em;
+            border-bottom: 2px solid #adb5bd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* --- Section Contrôles et Filtres --- */
+        .controls {
+            display: flex;
+            justify-content: flex-start; /* Aligner les filtres à gauche */
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .filter-group {
+            display: grid; 
+            grid-template-columns: auto 1fr; 
+            gap: 10px 15px; 
+            align-items: center;
+            margin-right: 40px;
+        }
+        .filter-group label {
+            font-weight: 600;
+            color: #007bff;
+        }
+        .filter-group select, .filter-group input[type="date"] {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #007bff;
+            cursor: pointer;
+        }
+        
+        /* Icône Calendrier pour "Tous les Événements" */
+        .calendar-icon {
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #007bff;
+            margin-left: 15px;
+        }
+        .calendar-icon:hover {
+            color: #0056b3;
+        }
+
+        /* --- Liste et Statut des Événements --- */
+        .event-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px 0;
+            border-bottom: 1px dashed #e9ecef;
+        }
+        
+        .event-details h3 {
+            margin: 0 0 5px 0;
+            color: #007bff;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-tag {
+            font-size: 0.7em;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+        }
+        .status-tag.approaching {
+            background-color: #ffc107; /* Jaune */
+            color: #343a40;
+        }
+        .status-tag.good {
+            background-color: #28a745; /* Vert */
+        }
+        .status-tag.past {
+            background-color: #6c757d; /* Gris */
+        }
+
+        /* Styles de base de la liste (inchangés) */
+        .event-date-box { background-color: #e9ecef; color: #343a40; padding: 10px; border-radius: 4px; text-align: center; font-size: 1.1em; font-weight: bold; min-width: 80px; line-height: 1.2; margin-right: 20px; }
+        .event-date-box .day { font-size: 1.5em; display: block; }
+        .event-date-box .month { text-transform: uppercase; font-size: 0.8em; }
+        .event-details { flex-grow: 1; }
+        .event-details p { margin: 3px 0; font-size: 0.9em; }
+        .category-tag { display: inline-block; background-color: #dee2e6; padding: 2px 8px; border-radius: 3px; font-size: 0.75em; color: #495057; margin-top: 5px; margin-right: 5px; }
+        .no-events { text-align: center; padding: 30px; color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Tous les Événements</h1>
+
+        <div class="controls">
+            <div class="filter-group">
+                <label for="category-select">Catégorie :</label>
+                <select id="category-select" onchange="filterEvents()">
+                    <option value="all">Toutes les Catégories</option>
+                </select>
+                
+                <label for="date-select">Date :</label>
+                <input type="date" id="date-select" onchange="filterEvents()">
+            </div>
+            
+            <i id="calendar-view-icon" class="fas fa-calendar-alt calendar-icon" title="Afficher tous les événements triés par date"></i>
+        </div>
+        
+        <div id="event-list-container">
+            </div>
+
+    </div>
+
+    <script>
+        // --- Code JavaScript Front-Office ---
+
+        // Données d'Événements (Simulées)
+        const eventsData = [
+            // Note: Les dates sont dans le futur par rapport à la date de l'exécution, utilisez des dates futures pour le test.
+            { id: 1, title: "Hackathon 2026", description: "Défi de codage de 24h.", date: "2026-03-15", time: "09:00", location: "Bâtiment Techno", category: "Académique", eco: false },
+            { id: 2, title: "Tournoi de Foot", description: "Matchs inter-filières.", date: "2025-12-01", time: "18:30", location: "Stade du Campus", category: "Sport", eco: false },
+            { id: 3, title: "Nettoyage du Campus", description: "Action de collecte de déchets.", date: "2025-11-12", time: "14:00", location: "Porte Sud", category: "Éco-Responsable", eco: true }, // Proche (pour le test)
+            { id: 4, title: "Projection Ciné-Club", description: "Film français primé et débat.", date: "2026-01-05", time: "19:00", location: "Amphithéâtre A", category: "Culture", eco: false },
+            { id: 5, title: "Atelier CV & Entretien", description: "Conseils de professionnels.", date: "2025-11-16", time: "10:00", location: "Salle 105", category: "Académique", eco: false }, // Approche (pour le test)
+        ];
+        
+        // Formatte la date pour l'affichage dans la boîte
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const optionsDay = { day: 'numeric' };
+            const optionsMonth = { month: 'short' };
+            const day = date.toLocaleDateString('fr-FR', optionsDay);
+            const month = date.toLocaleDateString('fr-FR', optionsMonth).toUpperCase().replace('.', '');
+            return { day, month };
+        }
+        
+        // Fonction pour calculer l'état de l'événement (Approche ou C'est bon)
+        function getEventStatus(eventDateString) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Début du jour
+            
+            const eventDate = new Date(eventDateString);
+            eventDate.setHours(0, 0, 0, 0); 
+
+            // Si l'événement est dans le passé, on ne l'affiche pas ou on le marque comme passé (ici, on le marque passé)
+            if (eventDate < today) {
+                return '<span class="status-tag past">Passé</span>';
+            }
+            
+            // Calculer la différence en jours
+            const oneDay = 1000 * 60 * 60 * 24;
+            const diffTime = eventDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / oneDay);
+            
+            if (diffDays <= 7) {
+                return '<span class="status-tag approaching">Approche</span>';
+            } else {
+                return '<span class="status-tag good">C\'est bon</span>';
+            }
+        }
+
+        // 1. Fonction pour Afficher les Événements
+        function renderEvents(events) {
+            const container = document.getElementById('event-list-container');
+            container.innerHTML = ''; 
+
+            if (events.length === 0) {
+                container.innerHTML = '<p class="no-events">❌ Aucun événement trouvé avec ces critères de recherche.</p>';
+                return;
+            }
+
+            // Tri par date (du plus proche au plus éloigné)
+            events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            events.forEach(event => {
+                const dateParts = formatDate(event.date);
+                const statusTag = getEventStatus(event.date);
+
+                const item = document.createElement('div');
+                item.classList.add('event-item');
+                
+                // Le HTML est simplifié : plus de boutons d'action (Modifier/Supprimer)
+                item.innerHTML = `
+                    <div class="event-date-box">
+                        <span class="day">${dateParts.day}</span>
+                        <span class="month">${dateParts.month}</span>
+                    </div>
+                    <div class="event-details">
+                        <h3>
+                            ${event.title}
+                            ${statusTag} </h3>
+                        <p>Heure: ${event.time} | Lieu: ${event.location}</p>
+                        <p>${event.description}</p>
+                        <span class="category-tag">${event.category}</span>
+                        ${event.eco ? '<span class="category-tag" style="background-color:#d4edda; color:#155724;">Éco-Responsable</span>' : ''}
+                        
+                        <div class="event-actions">
+                            <button onclick="alert('Inscription à : ${event.title}')" style="color: #007bff; border: 1px solid #007bff; padding: 5px 10px; border-radius: 4px;"><i class="fas fa-user-plus"></i> S'inscrire</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // 2. Fonction de Filtrage UNIFIÉE (par Catégorie ET par Date)
+        function filterEvents() {
+            const selectedCategory = document.getElementById('category-select').value;
+            const selectedDate = document.getElementById('date-select').value;
+
+            // 1. Filtrage par Catégorie
+            let filteredEvents = eventsData.filter(event => {
+                return selectedCategory === 'all' || event.category === selectedCategory;
+            });
+
+            // 2. Filtrage par Date (si une date est sélectionnée)
+            if (selectedDate) {
+                filteredEvents = filteredEvents.filter(event => {
+                    return event.date === selectedDate; 
+                });
+            }
+            
+            renderEvents(filteredEvents); 
+        }
+        
+        // Fonction pour gérer le clic sur l'icône calendrier ("Tous les événements")
+        function handleCalendarClick() {
+             // Réinitialise tous les filtres
+            document.getElementById('category-select').value = 'all';
+            document.getElementById('date-select').value = ''; 
+            
+            renderEvents(eventsData); 
+        }
+        
+        // 3. Initialisation (Chargement au démarrage)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Remplissage dynamique des options du filtre Catégorie
+            const categories = [...new Set(eventsData.map(event => event.category))].sort();
+            const selectElement = document.getElementById('category-select');
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                selectElement.appendChild(option);
+            });
+            
+            // Événement sur l'icône de calendrier
+            document.getElementById('calendar-view-icon').addEventListener('click', handleCalendarClick);
+
+            // Premier affichage : tous les événements triés par date
+            renderEvents(eventsData);
+        });
+
+    </script>
+</body>
+</html>
