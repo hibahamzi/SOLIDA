@@ -1,0 +1,49 @@
+/* Centrage parfait du formulaire */
+.signin-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 180px);
+    background-color: #f9f9f9;
+    padding: 40px 0;
+}
+
+/* Boîte du formulaire */
+.signin-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+/* Champs */
+.form-control {
+    border-radius: 10px;
+    padding: 10px 15px;
+}
+
+/* Bouton principal */
+.btn-success {
+    background-color: #59ab6e;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #4b955f;
+}
+
+/* Lien */
+a.text-success {
+    text-decoration: none;
+}
+
+a.text-success:hover {
+    text-decoration: underline;
+}
+
