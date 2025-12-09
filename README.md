@@ -74,8 +74,7 @@ Technologies
 PHP 7.4+
 MySQL/MariaDB
 PDO
-JavaScript (ES6+)
-Bootstrap 5
+JavaScript 
 Font Awesome
 Auteur
 Projet développé dans le cadre d'un projet académique.
