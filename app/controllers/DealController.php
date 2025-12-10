@@ -365,7 +365,6 @@ class DealController
             exit;
         }
 
-        // IMPORTANT : plus de s.logo ici, car la colonne n'existe pas
         $sql = "SELECT d.*, s.nomEntreprise
                 FROM deals d
                 JOIN sponsors s ON d.IdSponsor = s.id
@@ -398,4 +397,115 @@ class DealController
         header('Location: index1.php?controller=deal&action=show&idDeal=' . $idDeal);
         exit;
     }
+
+    /**
+     * ==============================
+     *  ASSISTANT IA POUR L’ADMIN
+     * ==============================
+     */
+
+    // Action : page assistant IA
+    public function assistantIA(): void
+    {
+        $question = $_POST['question'] ?? '';
+        $aiAnswer = null;
+        $errorAi  = null;
+
+        // On récupère quelques deals récents pour donner du contexte à l'IA
+        $sql = "SELECT d.intitule, d.descriptionD, d.reduction, d.prixinitial, d.click_count, s.nomEntreprise
+                FROM deals d
+                JOIN sponsors s ON d.IdSponsor = s.id
+                ORDER BY d.idDeal DESC
+                LIMIT 10";
+        $stmt = $this->db->query($sql);
+        $recentDeals = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($question)) {
+            // Construire le contexte
+            $context = "Voici quelques offres (intitulé, sponsor, réduction, prix, vues) :\n";
+            foreach ($recentDeals as $d) {
+                $context .= "- " . ($d['intitule'] ?? '') . " | "
+                             . "Sponsor: " . ($d['nomEntreprise'] ?? '') . " | "
+                             . "Prix: " . ($d['prixinitial'] ?? 0) . " DT | "
+                             . "Réduction: " . ($d['reduction'] ?? 0) . "% | "
+                             . "Vues: " . ($d['click_count'] ?? 0) . "\n";
+            }
+            $context .= "\nAnalyse ces offres et aide l'administrateur à répondre à sa question.\n";
+
+            $prompt = $context
+                    . "\nQuestion de l'administrateur: " . $question
+                    . "\nRéponds en français, de manière claire et structurée (liste à puces possible), "
+                    . "en donnant des conseils concrets sur la gestion ou l'optimisation des offres pour des étudiants.";
+
+            try {
+                $aiAnswer = $this->callAI($prompt);
+            } catch (Exception $e) {
+                $errorAi = "Erreur lors de l'appel à l'IA : " . $e->getMessage();
+            }
+        }
+
+        include __DIR__ . '/../views/deal/assistant_ia.php';
+    }
+
+    /**
+     * Appel générique à une API d'IA (ex : OpenAI).
+     * À ADAPTER avec ta clé et éventuellement un autre endpoint/modèle.
+     */
+    private function callAI(string $prompt): ?string
+{
+    $apiKey = getenv('OPENAI_API_KEY'); // lit la clé depuis l'environnement
+    if (!$apiKey) {
+    throw new Exception("Clé API OpenAI manquante (variable d'environnement OPENAI_API_KEY).");
+}
+    $endpoint = 'https://api.openai.com/v1/chat/completions';
+    $model    = 'gpt-4o-mini'; // ou un autre modèle que ta clé autorise
+
+    $payload = [
+        'model'    => $model,
+        'messages' => [
+            [
+                'role'    => 'user',
+                'content' => $prompt
+            ]
+        ],
+        'max_tokens'   => 600,
+        'temperature'  => 0.7,
+    ];
+
+    $ch = curl_init($endpoint);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Authorization: ' . 'Bearer ' . $apiKey,
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+
+    $response = curl_exec($ch);
+if ($response === false) {
+    $err = curl_error($ch);
+    curl_close($ch);
+    throw new Exception("Erreur cURL: " . $err);
+}
+curl_close($ch);
+
+$data = json_decode($response, true);
+
+// Si OpenAI renvoie une erreur structurée
+if (isset($data['error'])) {
+    $msg  = $data['error']['message'] ?? 'Erreur inconnue';
+    $code = $data['error']['code'] ?? '';
+    // Message plus clair côté interface
+    if ($code === 'rate_limit_exceeded') {
+        throw new Exception("Limite de requêtes atteinte pour le modèle. Réessaie dans quelques secondes.");
+    }
+    throw new Exception("Erreur de l'API IA : " . $msg);
+}
+
+if (!is_array($data) || !isset($data['choices'][0]['message']['content'])) {
+    throw new Exception("Réponse IA invalide.");
+}
+
+return trim($data['choices'][0]['message']['content']);
+}
 }

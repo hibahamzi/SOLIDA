@@ -115,12 +115,43 @@
             margin-top: 10px;
         }
 
+        /* Bouton imprimer */
+        .print-btn-container {
+            margin-top: 20px;
+            text-align: right;
+        }
+
         @media (max-width: 576px) {
             .deal-detail-wrapper {
                 width: 95%;
             }
             .clr {
                 background-color: green;
+            }
+        }
+
+        /* Styles pour l'impression (PDF via Ctrl+P / Imprimer) */
+        @media print {
+            body {
+                background: #ffffff !important;
+            }
+            /* Cacher les menus, footer, boutons inutiles */
+            #templatemo_nav_top,
+            .clr,
+            footer,
+            .back-link,
+            .print-btn-container,
+            .modal,
+            .navbar {
+                display: none !important;
+            }
+            .deal-detail-wrapper {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            .deal-detail-card {
+                box-shadow: none !important;
+                border-radius: 0 !important;
             }
         }
     </style>
@@ -250,7 +281,6 @@
     $qrUrl      = null;
 
     if ($hasCoupon === 'OUI' && !empty($couponCode)) {
-        // On encode directement le code dans le QR (le téléphone affichera le texte)
         $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?'
                . 'size=200x200'
                . '&data=' . urlencode($couponCode);
@@ -258,9 +288,16 @@
     ?>
 
     <div class="deal-detail-wrapper">
-        <div class="deal-detail-card">
+        <div class="deal-detail-card" id="deal-print-block">
 
-            <!-- NOUVEAU LAYOUT : 2 colonnes dans le même bloc -->
+            <!-- Bouton imprimer -->
+            <div class="print-btn-container">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print();">
+                    <i class="fa fa-print"></i> Imprimer l'offre
+                </button>
+            </div>
+
+            <!-- NOUVEL LAYOUT : 2 colonnes dans le même bloc -->
             <div class="row">
                 <!-- Colonne gauche : informations du deal -->
                 <div class="col-md-7">

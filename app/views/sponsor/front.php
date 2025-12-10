@@ -62,7 +62,8 @@
             text-align: center;
             margin: 60px 0;
         }
-        .cta a.btn-link {
+        .cta a.btn-link,
+        .cta button.btn-link {
             padding: 12px 20px;
             margin: 10px;
             border-radius: 8px;
@@ -70,6 +71,7 @@
             font-size: 16px;
             display: inline-block;
             text-decoration: none;
+            border: none;
         }
 
         /* Boutons verts comme SOLIDA */
@@ -77,6 +79,20 @@
         .btn-add-deal {
             background: #28a745;
             color: #fff;
+        }
+
+        /* Bouton accès admin (icône seulement) */
+        .btn-admin-icon {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .btn-admin-icon i {
+            font-size: 18px;
+        }
+        .btn-admin-icon:hover i {
+            color: #ffc107;
         }
 
         /* OFFRES */
@@ -141,6 +157,16 @@
                 background-color: green;
             }
         }
+
+        /* Message d'erreur mot de passe */
+        #admin-error {
+            display: none;
+            padding: 8px 12px;
+            margin: 0;
+            background: #f8d7da;
+            color: #721c24;
+            font-size: 14px;
+        }
     </style>
 </head>
 
@@ -149,7 +175,7 @@
 <!-- ======= Top Nav noir ======= -->
 <nav class="navbar navbar-expand-lg bg-dark navbar-light d-none d-lg-block" id="templatemo_nav_top">
     <div class="container text-light">
-        <div class="w-100 d-flex justify-content-between">
+        <div class="w-100 d-flex justify-content-between align-items-center">
             <div>
                 <i class="fa fa-envelope mx-2"></i>
                 <a class="navbar-sm-brand text-light text-decoration-none"
@@ -158,15 +184,29 @@
                 <a class="navbar-sm-brand text-light text-decoration-none"
                    href="tel:010-020-0340">010-020-0340</a>
             </div>
-            <div>
-                <a class="text-light" href="#" target="_blank"><i class="fab fa-facebook-f fa-sm fa-fw me-2"></i></a>
-                <a class="text-light" href="#" target="_blank"><i class="fab fa-instagram fa-sm fa-fw me-2"></i></a>
-                <a class="text-light" href="#" target="_blank"><i class="fab fa-twitter fa-sm fa-fw me-2"></i></a>
-                <a class="text-light" href="#" target="_blank"><i class="fab fa-linkedin fa-sm fa-fw"></i></a>
+
+            <div class="d-flex align-items-center">
+                <!-- Réseaux sociaux -->
+                <div class="me-3">
+                    <a class="text-light" href="#" target="_blank"><i class="fab fa-facebook-f fa-sm fa-fw me-2"></i></a>
+                    <a class="text-light" href="#" target="_blank"><i class="fab fa-instagram fa-sm fa-fw me-2"></i></a>
+                    <a class="text-light" href="#" target="_blank"><i class="fab fa-twitter fa-sm fa-fw me-2"></i></a>
+                    <a class="text-light" href="#" target="_blank"><i class="fab fa-linkedin fa-sm fa-fw"></i></a>
+                </div>
+
+                <!-- 🔐 Bouton admin dans le header, icône uniquement -->
+                <button type="button" class="btn-admin-icon" id="btnAdminSponsorHeader"
+                        title="Espace admin sponsors">
+                    <i class="fas fa-user-shield"></i>
+                </button>
             </div>
         </div>
     </div>
 </nav>
+<!-- Message d'erreur admin sous le header -->
+<div id="admin-error" class="text-center">
+    Mot de passe incorrect.
+</div>
 
 <div class="clr">
     <nav class="navbar navbar-expand-lg navbar-light shadow">
@@ -384,5 +424,30 @@
 <script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/bootstrap.bundle.min.js"></script>
 <script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/templatemo.js"></script>
 <script src="/PROJET_WEB_MVC_FINAL/app/views/sponsor/assets/js/custom.js"></script>
+
+<script>
+    // Mot de passe admin en JS (simple)
+    const ADMIN_PASSWORD = '2710';
+    const adminBtnHeader = document.getElementById('btnAdminSponsorHeader');
+    const adminError = document.getElementById('admin-error');
+
+    adminBtnHeader.addEventListener('click', function () {
+        adminError.style.display = 'none';
+
+        const pwd = prompt("Veuillez entrer le mot de passe pour accéder à l'espace admin des sponsors :");
+
+        if (pwd === null) {
+            // Annulé
+            return;
+        }
+
+        if (pwd === ADMIN_PASSWORD) {
+            window.location.href = "/PROJET_WEB_MVC_FINAL/public/index1.php?controller=sponsor&action=index";
+        } else {
+            adminError.style.display = 'block';
+        }
+    });
+</script>
+
 </body>
 </html>

@@ -136,11 +136,20 @@ foreach ($deals as $d) {
         <div class="table-container">
             <div class="table-header">
                 <h2>Liste des deals</h2>
-                <!-- Bouton Ajouter : va vers action=create -->
-                <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=deal&action=create"
-                   class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Ajouter
-                </a>
+
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <!-- Bouton Assistant IA -->
+                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=deal&action=assistantIA"
+                       class="btn btn-secondary">
+                        <i class="fas fa-robot"></i> Assistant IA
+                    </a>
+
+                    <!-- Bouton Ajouter : va vers action=create -->
+                    <a href="/PROJET_WEB_MVC_FINAL/public/index1.php?controller=deal&action=create"
+                       class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </a>
+                </div>
             </div>
 
             <div class="table-responsive">
