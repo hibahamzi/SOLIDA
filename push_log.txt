@@ -1,0 +1,28 @@
+POST git-receive-pack (chunked)
+remote: error: GH013: Repository rule violations found for refs/heads/integration.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:             
+remote:       —— OpenAI API Key ————————————————————————————————————        
+remote:        locations:        
+remote:          - commit: 44a215a8a2f49ee9c12ab86d36904686791d2bbd        
+remote:            path: controllers/DealController.php:13        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/hibahamzi/SOLIDA/security/secret-scanning/unblock-secret/36sZCGouAyvRRyFhhinnZy0dmgA        
+remote:             
+remote: 
+remote: 
+Pushing to https://github.com/hibahamzi/SOLIDA.git
+To https://github.com/hibahamzi/SOLIDA.git
+ ! [remote rejected] integration -> integration (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/hibahamzi/SOLIDA.git'
